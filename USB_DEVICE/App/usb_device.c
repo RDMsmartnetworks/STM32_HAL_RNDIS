@@ -62,8 +62,8 @@ static RNDIS_USB_STATISTIC_t rndis_statistic;
 
 // Global variables ***********************************************************
 USBD_HandleTypeDef         hUsbDeviceFS = {0};  // USB Device Core handle declaration
-//extern queue_handle_t      uartQueue;
-//extern queue_handle_t      usbQueue;
+extern queue_handle_t      uartQueue;
+extern queue_handle_t      usbQueue;
 
 // Private function prototypes ************************************************
 
@@ -113,8 +113,8 @@ void usb_deinit( void )
 inline void on_usbOutRxPacket(const char *data, int size)
 {
    rndis_statistic.counterRxFrame++;
-   //queue_enqueue( (uint8_t*)data, size, &usbQueue );
-   //USBD_RNDIS_setBuffer( queue_getHeadBuffer( &usbQueue ) );
+   queue_enqueue( (uint8_t*)data, size, &usbQueue );
+   USBD_RNDIS_setBuffer( queue_getHeadBuffer( &usbQueue ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -126,7 +126,7 @@ inline void on_usbOutRxPacket(const char *data, int size)
 inline void on_usbInTxCplt( void )
 {
    rndis_statistic.counterTxFrame++;
-   //queue_dequeue(&uartQueue);
+   queue_dequeue(&uartQueue);
 }
 
 // ----------------------------------------------------------------------------

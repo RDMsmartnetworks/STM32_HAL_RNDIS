@@ -92,8 +92,8 @@ typedef struct BUS_UART_STATISTIC_s
 }RNDIS_USB_STATISTIC_t;
 
 // Exported functions *********************************************************
-bool                 USBD_RNDIS_canSend            ( void   );
-bool                 USBD_RNDIS_send               (  const void *data, int size );
+bool                 USBD_RNDIS_canSend            ( void );
+bool                 USBD_RNDIS_send               ( const void *data, uint16_t size );
 void                 USBD_RNDIS_setBuffer          ( uint8_t* buffer );
 USBD_ClassTypeDef*   USBD_RNDIS_getClass           ( void );
 uint8_t              USBD_RNDIS_RegisterInterface  ( USBD_HandleTypeDef *pdev, USBD_RNDIS_ItfTypeDef *fops );

@@ -197,9 +197,9 @@ typedef uint32_t rndis_ParameterValueLength_t;
 typedef struct{
 	rndis_ParameterNameOffset_t		ParameterNameOffset;
 	rndis_ParameterNameLength_t		ParameterNameLength;
-	rndis_ParameterType_t			ParameterType;
-	rndis_ParameterValueOffset_t	ParameterValueOffset;
-	rndis_ParameterValueLength_t	ParameterValueLength;	
+	rndis_ParameterType_t			   ParameterType;
+	rndis_ParameterValueOffset_t	   ParameterValueOffset;
+	rndis_ParameterValueLength_t	   ParameterValueLength;	
 	}rndis_config_parameter_t;
 	
 typedef uint32_t rndis_Reserved_t;
@@ -264,17 +264,17 @@ typedef uint32_t rndis_PerPacketInfoOffset_t;
 typedef uint32_t rndis_PerPacketInfoLength_t;
 
 typedef struct{
-	rndis_MessageType_t			MessageType;
-	rndis_MessageLength_t		MessageLength;
-	rndis_DataOffset_t			DataOffset;
-	rndis_DataLength_t			DataLength;
-	rndis_OOBDataOffset_t		OOBDataOffset;
-	rndis_OOBDataLength_t		OOBDataLength;
-	rndis_NumOOBDataElements_t	NumOOBDataElements;
+	rndis_MessageType_t			   MessageType;
+	rndis_MessageLength_t		   MessageLength;
+	rndis_DataOffset_t			   DataOffset;
+	rndis_DataLength_t			   DataLength;
+	rndis_OOBDataOffset_t		   OOBDataOffset;
+	rndis_OOBDataLength_t		   OOBDataLength;
+	rndis_NumOOBDataElements_t	   NumOOBDataElements;
 	rndis_PerPacketInfoOffset_t	PerPacketInfoOffset;
-	rndis_PerPacketInfoLength_t PerPacketInfoLength;
-	rndis_DeviceVcHandle_t		DeviceVcHandle;
-	rndis_Reserved_t			Reserved;
+	rndis_PerPacketInfoLength_t   PerPacketInfoLength;
+	rndis_DeviceVcHandle_t		   DeviceVcHandle;
+	rndis_Reserved_t			      Reserved;
 	}rndis_data_packet_t;
 
 typedef uint32_t rndis_ClassInformationOffset_t;

@@ -12,7 +12,7 @@
 ///
 /// \date      29102021
 /// 
-/// \copyright Copyright (C) 2021 by "Reichle & De-Massari AG", 
+/// \copyright Copyright (C) 2020 by "Reichle & De-Massari AG", 
 ///            all rights reserved.
 ///
 /// \pre       
@@ -29,7 +29,9 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "usb_device.h"
+#include "usb_device.h"
 #include "queuex.h"
+#include "rs485.h"
 
 // Private typedef *************************************************************
 
@@ -50,12 +52,12 @@ const osEventFlagsAttr_t myEvent01_attributes = {
   .name = "myEvent01"
 };
 
-//queue_handle_t usbQueue;
-//queue_handle_t uartQueue;
+queue_handle_t usbQueue;
+queue_handle_t uartQueue;
 
 // Private function prototypes ************************************************
-void           SystemClock_Config   ( void );
-void           startRndisTask       ( void *argument );
+void SystemClock_Config   ( void );
+void startRndisTask       ( void *argument );
 
 // Private functions **********************************************************
 
@@ -146,23 +148,22 @@ void startRndisTask( void *argument )
 {
    // init peripherals
    usb_init();
-   //rs485_init();
+   rs485_init();
   
    // set the queue on the uart io
-   //uartQueue.messageDirection  = SERVER_TO_USB;
-   //uartQueue.output            = usb_output;
-   //queue_init(&uartQueue);
+   uartQueue.messageDirection  = UART_TO_USB;
+   uartQueue.output            = usb_output;
+   queue_init(&uartQueue);
    
    // set the queue on the usb io
-   //usbQueue.messageDirection   = USB_TO_SERVER;
-   //usbQueue.output             = server_output;  
-   //queue_init(&usbQueue);
+   usbQueue.messageDirection   = USB_TO_UART;
+   usbQueue.output             = rs485_output;  
+   queue_init(&usbQueue);
    
    for(;;)
    {
-      //queue_manager( &uartQueue );
-      //queue_manager( &usbQueue );
-      osDelay(1);
+      queue_manager( &uartQueue );
+      queue_manager( &usbQueue );
    }
 }
 

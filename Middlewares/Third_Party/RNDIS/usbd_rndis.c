@@ -4,7 +4,13 @@
 /// \brief     RNDIS device C source file
 ///
 /// \details   The rndis usb device c source file contains the top level layer
-///            of the usb device functionality.
+///            of the usb device functionality. This library is based on the
+///            irndis library from Sergey Fetisov: 
+///            https://github.com/fetisov/lrndis
+///            
+///            The irindis libary is based on the older std peripheral library
+///            from st. This is the HAL ported version of irndis with additional
+///            code optimitation and performance improvements.
 ///
 /// \author    Nico Korn
 ///
@@ -89,9 +95,9 @@ static const uint8_t          permanent_hwaddr[6] = { RNDIS_HWADDR };
 // struct for the rndis transmission information and status
 static struct
 {
-	uint8_t *ptr;
-	int size;
-	int state;
+	uint8_t  *ptr;
+	uint16_t size;
+	uint16_t state;
 	bool need_padding;
 } tx =
 {
@@ -252,8 +258,8 @@ static uint8_t encapsulated_buffer[ENC_BUF_SIZE];
 
 // Global variables ***********************************************************
 extern USBD_HandleTypeDef  hUsbDeviceFS;
-//extern queue_handle_t      usbQueue;
-//extern queue_handle_t      uartQueue;
+extern queue_handle_t      usbQueue;
+extern queue_handle_t      uartQueue;
 
 // Private function prototypes ************************************************
 static uint8_t    USBD_RNDIS_Init                           ( USBD_HandleTypeDef *pdev, uint8_t cfgidx );
@@ -269,8 +275,9 @@ static uint8_t    *USBD_RNDIS_GetOtherSpeedCfgDesc          ( uint16_t *length )
 static uint8_t    *USBD_RNDIS_GetDeviceQualifierDescriptor  ( uint16_t *length );
 static void       USBD_RNDIS_query                          ( void *pdev );
 static void       USBD_RNDIS_handleSetMsg                   ( void *pdev );
-static void       USBD_RNDIS_handleConfigParm               ( const char *data, int keyoffset, int valoffset, int keylen, int vallen );
+static void       USBD_RNDIS_handleConfigParm               ( const char *data, uint16_t keyoffset, uint16_t valoffset, uint16_t keylen, uint16_t vallen );
 static void       USBD_RNDIS_packetFilter                   ( uint32_t newfilter );
+static void       USBD_RNDIS_query_cmplt                    ( uint32_t status, const void *data, uint16_t size );
 
 // RNDIS interface class callbacks structure
 USBD_ClassTypeDef USBD_RDNIS =
@@ -324,7 +331,7 @@ static uint8_t USBD_RNDIS_Init( USBD_HandleTypeDef *pdev, uint8_t cfgidx )
    USBD_LL_OpenEP( pdev, RNDIS_DATA_OUT_EP, USBD_EP_TYPE_BULK, RNDIS_DATA_OUT_SZ );
    
    // get memory for packet
-   //rndis_rx_buffer = (char*)queue_getHeadBuffer( &usbQueue );
+   rndis_rx_buffer = (char*)queue_getHeadBuffer( &usbQueue );
    
    // Prepare Out endpoint to receive next packet
    USBD_LL_PrepareReceive( pdev, RNDIS_DATA_OUT_EP, (uint8_t*)rndis_rx_buffer, QUEUEBUFFERLENGTH );
@@ -333,7 +340,7 @@ static uint8_t USBD_RNDIS_Init( USBD_HandleTypeDef *pdev, uint8_t cfgidx )
    tx.state = TX_STATE_READY;
    
    // init the queue
-   //queue_init(&uartQueue);
+   queue_init(&uartQueue);
 
    return USBD_OK;
 }
@@ -506,10 +513,10 @@ static uint8_t USBD_RNDIS_DataIn( USBD_HandleTypeDef *pdev, uint8_t epnum )
 /// \brief     Handled packet function.
 ///
 /// \param     [in]  const char *data
-/// \param     [in]  int size
+/// \param     [in]  uint16_t size
 ///
 /// \return    none
-static void USBD_RNDIS_handlePacket(const char *data, int size)
+static void USBD_RNDIS_handlePacket(const char *data, uint16_t size)
 {
 	rndis_data_packet_t *p;
 	p = (rndis_data_packet_t *)data;
@@ -572,21 +579,22 @@ bool USBD_RNDIS_canSend(void)
 /// \brief     Requests to send next packet uver rndis usb.
 ///
 /// \param     [in]  const void *data
-/// \param     [in]  int size
+/// \param     [in]  uint16_t size
 ///
 /// \return    bool
-bool USBD_RNDIS_send( const void *data, int size )
+bool USBD_RNDIS_send( const void *data, uint16_t size )
 {
 	if( tx.state != TX_STATE_READY )
    {
       return false;
    }
-   if( size <= 0 || size > ETH_MAX_PACKET_SIZE )
+   if( size > ETH_MAX_PACKET_SIZE )
    {
       return false;
    }
 
 	__disable_irq();
+   
    tx.ptr = (uint8_t *)data-44u;    // there is allocated memory in front of data for the usb header
 	tx.size = size+44u;              // add 44 byte of header for the complete length
 	tx.state = TX_STATE_NEED_SENDING;
@@ -605,10 +613,7 @@ bool USBD_RNDIS_send( const void *data, int size )
       hdr->MessageLength++;
    }
    
-   if( USBD_LL_Transmit(&hUsbDeviceFS, RNDIS_DATA_IN_EP, tx.ptr, (uint32_t)tx.size) != USBD_OK )
-   {
-      return false;
-   }
+   USBD_LL_Transmit(&hUsbDeviceFS, RNDIS_DATA_IN_EP, tx.ptr, (uint32_t)tx.size);
    tx.state = TX_STATE_SENDING_DATA;
 
 	__enable_irq();
@@ -698,11 +703,11 @@ uint8_t USBD_RNDIS_RegisterInterface( USBD_HandleTypeDef *pdev, USBD_RNDIS_ItfTy
 //------------------------------------------------------------------------------
 /// \brief     Query response function 32 bit.
 ///
-/// \param     [in]  int status
+/// \param     [in]  uint32_t status
 /// \param     [in]  uint32_t data
 ///
 /// \return    none
-void USBD_RNDIS_query_cmplt32( int status, uint32_t data )
+void USBD_RNDIS_query_cmplt32( uint32_t status, uint32_t data )
 {
    rndis_query_cmplt_t *c;
    c = (rndis_query_cmplt_t *)encapsulated_buffer;
@@ -718,12 +723,12 @@ void USBD_RNDIS_query_cmplt32( int status, uint32_t data )
 //------------------------------------------------------------------------------
 /// \brief     Query response function.
 ///
-/// \param     [in]  int status
-/// \param     [in]  uint32_t data
-/// \param     [in]  int size
+/// \param     [in]  uint32_t status
+/// \param     [in]  const void *data
+/// \param     [in]  uint16_t size
 ///
 /// \return    none
-void USBD_RNDIS_query_cmplt( int status, const void *data, int size )
+static void USBD_RNDIS_query_cmplt( uint32_t status, const void *data, uint16_t size )
 {
 	rndis_query_cmplt_t *c;
 	c = (rndis_query_cmplt_t *)encapsulated_buffer;
@@ -784,13 +789,13 @@ static void USBD_RNDIS_query( void *pdev )
 /// \brief     Config parameter handler
 ///
 /// \param     [in]  const char *data
-/// \param     [in]  int keyoffset
-/// \param     [in]  int valoffset
-/// \param     [in]  int keylen
-/// \param     [in]  int vallen
+/// \param     [in]  uint16_t keyoffset
+/// \param     [in]  uint16_t valoffset
+/// \param     [in]  uint16_t keylen
+/// \param     [in]  uint16_t vallen
 ///
 /// \return    none
-static void USBD_RNDIS_handleConfigParm( const char *data, int keyoffset, int valoffset, int keylen, int vallen )
+static void USBD_RNDIS_handleConfigParm( const char *data, uint16_t keyoffset, uint16_t valoffset, uint16_t keylen, uint16_t vallen )
 {
     (void)data;
     (void)keyoffset;

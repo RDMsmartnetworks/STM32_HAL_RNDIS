@@ -1085,6 +1085,9 @@
                         <name>$PROJ_DIR$\..\Core\Inc\queuex.h</name>
                     </file>
                     <file>
+                        <name>$PROJ_DIR$\..\Core\Inc\rs485.h</name>
+                    </file>
+                    <file>
                         <name>$PROJ_DIR$\..\Core\Inc\stm32f4xx_hal_conf.h</name>
                     </file>
                     <file>
@@ -1099,6 +1102,9 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\queuex.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Core\Src\rs485.c</name>
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\stm32f4xx_hal_msp.c</name>
