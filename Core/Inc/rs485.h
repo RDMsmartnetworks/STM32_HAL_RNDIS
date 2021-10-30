@@ -61,7 +61,8 @@ void     rs485_init              ( void );
 void     rs485_deinit            ( void );
 uint8_t  rs485_output            ( uint8_t* buffer, uint16_t length );
 uint8_t  rs485_receive           ( uint8_t* buffer, uint16_t length );
-
+void     rs485_rxCplt            ( void );
+void     rs485_txCplt            ( void );
 #endif // __RS485_H
 
 /********************** (C) COPYRIGHT Reichle & De-Massari *****END OF FILE****/

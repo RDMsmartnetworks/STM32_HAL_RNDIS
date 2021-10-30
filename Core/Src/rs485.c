@@ -1,9 +1,9 @@
 // ****************************************************************************
 /// \file      rs485.c
 ///
-/// \brief     bus uart module
+/// \brief     rs485 uart module
 ///
-/// \details   Module used to initialise bus uart peripherals completed with 
+/// \details   Module used to initialise rs485 uart peripherals completed with 
 ///            functions for receiving and transmitting data.
 ///
 /// \author    Nico Korn
@@ -27,15 +27,18 @@
 
 // Include ********************************************************************
 #include "rs485.h"
+#include "queuex.h"
 
 // Private defines ************************************************************
-
 
 // Private types     **********************************************************
 
 // Private variables **********************************************************
+static uint8_t* rxBufferPointerExample;
 
 // Global variables ***********************************************************
+extern queue_handle_t uartQueue;
+extern queue_handle_t usbQueue;
 
 // Private function prototypes ************************************************
 
@@ -49,6 +52,7 @@
 /// \return    none
 void rs485_init( void )
 {
+   rxBufferPointerExample = queue_getHeadBuffer( &uartQueue );
 }
 
 //------------------------------------------------------------------------------
@@ -62,7 +66,7 @@ void rs485_deinit( void )
 }
 
 //------------------------------------------------------------------------------
-/// \brief     Uart output function.          
+/// \brief     Uart start output/transmit function.          
 ///
 /// \param     [in] uint8_t* buffer
 /// \param     [in] uint16_t length
@@ -74,7 +78,7 @@ uint8_t rs485_output( uint8_t* buffer, uint16_t length )
 }
 
 //------------------------------------------------------------------------------
-/// \brief     Uart receive function.          
+/// \brief     Uart start receive function.          
 ///
 /// \param     [in] uint8_t* buffer
 /// \param     [in] uint16_t length
@@ -83,6 +87,31 @@ uint8_t rs485_output( uint8_t* buffer, uint16_t length )
 uint8_t rs485_receive( uint8_t* buffer, uint16_t length )
 {
    return 1;
+}
+
+//------------------------------------------------------------------------------
+/// \brief     Uart rx complete callback function. Called from peripheral irq
+///            handler.
+///
+/// \param     none
+///
+/// \return    none
+void rs485_rxCplt( void )
+{
+   uint16_t rxLengthExample = 500;
+   queue_enqueue( rxBufferPointerExample, rxLengthExample, &uartQueue );
+}
+
+//------------------------------------------------------------------------------
+/// \brief     Uart tx complete callback function. Called from peripheral irq
+///            handler.
+///
+/// \param     none
+///
+/// \return    none
+void rs485_txCplt( void )
+{
+   queue_dequeue( &usbQueue );
 }
 
 /********************** (C) COPYRIGHT Reichle & De-Massari *****END OF FILE****/

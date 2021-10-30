@@ -52,8 +52,10 @@ const osEventFlagsAttr_t myEvent01_attributes = {
   .name = "myEvent01"
 };
 
-queue_handle_t usbQueue;
+// queue declerations
 queue_handle_t uartQueue;
+queue_handle_t usbQueue;
+   
 
 // Private function prototypes ************************************************
 void SystemClock_Config   ( void );
@@ -147,9 +149,9 @@ void SystemClock_Config( void )
 void startRndisTask( void *argument )
 {
    // init peripherals
-   usb_init();
    rs485_init();
-  
+   usb_init();
+   
    // set the queue on the uart io
    uartQueue.messageDirection  = UART_TO_USB;
    uartQueue.output            = usb_output;

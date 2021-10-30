@@ -105,7 +105,7 @@ typedef struct queue
    uint32_t             tailIndex;
    uint32_t             tailError;
    uint32_t             spuriousError;
-   uint8_t              (*output)(uint8_t*, uint16_t);
+   uint8_t              (*output)( uint8_t*, uint16_t );
 } queue_handle_t;
 
 // Exported functions *********************************************************
