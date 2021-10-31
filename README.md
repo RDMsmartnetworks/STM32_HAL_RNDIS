@@ -22,8 +22,8 @@ It should be easy to port the library to other st mcu's. Generate a new cdc usb 
 Info: 
 The rndis library is based on the library from Sergey Fetisov: https://github.com/fetisov/lrndis and is using a rndis protocol library from Colin O'Flynn.
 
-Versions:
-STM32_HAL_RNDIS 0.2.0.0
-FreeRTOS Kernel V10.3.1
-STM32Cube_FW_F4_V1.26.0
+Versions: <br>
+STM32_HAL_RNDIS 0.2.0.0 <br>
+FreeRTOS Kernel V10.3.1 <br>
+STM32Cube_FW_F4_V1.26.0 <br>
 
