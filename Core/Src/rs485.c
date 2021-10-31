@@ -21,7 +21,9 @@
 ///
 /// \warning   
 ///
-/// \todo      
+/// \todo      This is only a template with almost empty function bodies.
+///            To get this worked you can take this c files as template for
+///            any communication peripheral or as interface to a server.
 ///
 // ****************************************************************************
 

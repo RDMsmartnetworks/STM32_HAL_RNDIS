@@ -27,4 +27,5 @@ Info:
 <br>STM32_HAL_RNDIS 0.2.0.0 
 <br>FreeRTOS Kernel V10.3.1 
 <br>STM32Cube_FW_F4_V1.26.0 
+<br>STM32CubeMX 6.3.0 
 
