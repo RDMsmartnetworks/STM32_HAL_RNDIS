@@ -232,7 +232,7 @@
                     <item>rndis_statistic</item>
                     <item>messageRx</item>
                     <item>messageTx</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>

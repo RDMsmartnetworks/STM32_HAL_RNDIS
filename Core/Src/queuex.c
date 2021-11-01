@@ -167,14 +167,17 @@ inline void queue_dequeue( queue_handle_t *queueHandle )
    {
       // Update queue statistics.
       queueHandle->dataPacketsOUT++;
-      queueHandle->queueLength--;
       queueHandle->bytesOUT += queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].dataLength; // note: this are the frame bytes without preamble and crc value
       
       // Set message status.
+      queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].data[0] = 0x00;
       queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].messageStatus = EMPTY_TX;
       
       // Set tail number.
       queueHandle->tailIndex++;
+      
+      // set queue length
+      queueHandle->queueLength = queueHandle->headIndex - queueHandle->tailIndex;
    }
    else
    {
@@ -216,7 +219,6 @@ inline uint8_t* queue_enqueue( uint8_t* dataStart, uint16_t dataLength, queue_ha
       
       // Update queue statistics.
       queueHandle->frameCounter++;
-      queueHandle->queueLength++;
       queueHandle->dataPacketsIN++;
       queueHandle->bytesIN += dataLength;
       if( queueHandle->queueLength > queueHandle->queueLengthPeak )
@@ -226,6 +228,9 @@ inline uint8_t* queue_enqueue( uint8_t* dataStart, uint16_t dataLength, queue_ha
       
       // Increment absolute head index
       queueHandle->headIndex++;
+      
+      // set queue length
+      queueHandle->queueLength = queueHandle->headIndex - queueHandle->tailIndex;
       
       // Set receiving state on the queue object.
       queueHandle->queue[queueHandle->headIndex%QUEUELENGTH].messageStatus = RECEIVING_RX;
