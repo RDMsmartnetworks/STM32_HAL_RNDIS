@@ -1,10 +1,13 @@
 // ****************************************************************************
-/// \file      queue.c
+/// \file      queuex.c
 ///
 /// \brief     queue Module
 ///
-/// \details   Module which manages the queue for transmitting 
-///            data between communication interfaces. 
+/// \details   This is the queuex c source file. It contents the queue
+///            functionality. The queue is a ringbuffer with static allocated
+///            memory for the sake of performance. The parameters are in the 
+///            header file. There the parameters for the ringbuffer length and
+///            buffer length can be set.
 ///
 /// \author    Nico Korn
 ///
@@ -64,7 +67,7 @@
 // ----------------------------------------------------------------------------
 /// \brief     Queue init.
 ///
-/// \param     none
+/// \param     [in/out] queue_handle_t *queueHandle
 ///
 /// \return    none
 void queue_init( queue_handle_t *queueHandle )
@@ -83,7 +86,7 @@ void queue_init( queue_handle_t *queueHandle )
    queueHandle->headIndex              = QUEUELENGTH;
    queueHandle->tailIndex              = QUEUELENGTH;
    
-   // cleanup queue
+   // cleanup the queue
    for( uint8_t i = 0; i < QUEUELENGTH; i++ )
    {
       memset( queueHandle->queue[i].data, 0x00, QUEUEBUFFERLENGTH );
@@ -92,39 +95,48 @@ void queue_init( queue_handle_t *queueHandle )
       queueHandle->queue[i].dataStart        = NULL;
    }
    
-   // message status of the message that's need to be send
+   // queue status - the tail is used to transmitt messages. As long as the
+   // peripheral is sending the tail thus the queue status remains TAIL_BLOCKED 
+   // because of doing zero opy. After a transmission has been completed the 
+   // queue status will be set back to TAIL_UNBLOCKED.
    queueHandle->queueStatus            = TAIL_UNBLOCKED;
    
-   // disable irq to avoid racing conditions
+   // disable irq
    __enable_irq(); 
 }
 
 // ----------------------------------------------------------------------------
 /// \brief     The queue manager checks for available data to send, and calls
-///            the out interface.
+///            the linked peripheral output interface. NOTE! You have to provide
+///            and link an output interface function before calling this
+///            function.
 ///
-/// \param     none
+/// \param     [in/out] queue_handle_t *queueHandle
 ///
 /// \return    none
 inline void queue_manager( queue_handle_t *queueHandle )
 {      
+   // If the queue status is set to a blocked tail return.
    if( queueHandle->queueStatus != TAIL_UNBLOCKED )
    {
       return;
    }
    
+   // Check if tail and header index are ok and if the message object in the 
+   // queue is ready for transmission.
    if( queueHandle->tailIndex < queueHandle->headIndex 
       && queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].messageStatus == READY_FOR_TX )
    {
-      // set queue and message status need to be set at this point to avoid transmission complete
-      // race conditions
+      // To avoid racing conditions, immediately block the tail and set the
+      // message status to processing.
       queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].messageStatus = PROCESSING_TX;
       queueHandle->queueStatus = TAIL_BLOCKED;
       
-      // setup the next frame pointed by the tx pointer and send it hrough the eth interface
+      // Send the frame with the linked output function provided by the
+      // communication peripheral.
       if( queueHandle->output( queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].dataStart, queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].dataLength ) != 1 )
       {
-         // peripheral occupied, set back states
+         // Peripheral is busy, set back states.
          queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].messageStatus = READY_FOR_TX;
          queueHandle->queueStatus = TAIL_UNBLOCKED;
       }
@@ -133,35 +145,35 @@ inline void queue_manager( queue_handle_t *queueHandle )
 
 // ----------------------------------------------------------------------------
 /// \brief     The queue manager checks for available data to send, and calls
-///            the out interface.
+///            the linled output interface.
 ///
-/// \param     none
+/// \param     [in/out] queue_handle_t *queueHandle
 ///
 /// \return    none
 inline void queue_dequeue( queue_handle_t *queueHandle )
 {   
-   // transmission complete unblock the tail
+   // Transmission complete unblock the tail.
    queueHandle->queueStatus = TAIL_UNBLOCKED;
-   
+  
    if( queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].messageStatus != PROCESSING_TX )
    {
-      // spurious
+      // Spurious error check for debugging
       queueHandle->spuriousError++;
       return;
    }
    
+   // Check if tail and head index are ok.
    if( queueHandle->tailIndex < queueHandle->headIndex )
    {
-      // decrement queueHandle length
+      // Update queue statistics.
       queueHandle->dataPacketsOUT++;
       queueHandle->queueLength--;
       queueHandle->bytesOUT += queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].dataLength; // note: this are the frame bytes without preamble and crc value
       
-      // set message status
-      queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].data[0] = 0x00;
+      // Set message status.
       queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].messageStatus = EMPTY_TX;
       
-      // set tail number
+      // Set tail number.
       queueHandle->tailIndex++;
    }
    else
@@ -171,61 +183,58 @@ inline void queue_dequeue( queue_handle_t *queueHandle )
 }
 
 // ----------------------------------------------------------------------------
-/// \brief     Set the queue object as ready to process and return a pointer 
-///            to an empty queue object.
+/// \brief     Enqueue a new message into the ringbuffer. If the ringbuffer is
+///            full, the slot will be used again until the head can move
+///            forward.
 ///
-/// \param     [in]  queue_handle_t *queueHandle
+/// \param     [in/out] queue_handle_t *queueHandle
 ///
-/// \return    none
+/// \return    uint8_t* data pointer
 inline uint8_t* queue_enqueue( uint8_t* dataStart, uint16_t dataLength, queue_handle_t *queueHandle )
 {
-   // integer type wrap arround check and set for head and tail index
+   // Integer type wrap arround check and set for head and tail index.
    if( queueHandle->headIndex < QUEUELENGTH )
    {
       queueHandle->headIndex += QUEUELENGTH;
       queueHandle->tailIndex += QUEUELENGTH;
    }
    
-   // fifo not full?
+   // Ringbuffer not full?
    if( (queueHandle->headIndex - queueHandle->tailIndex) < QUEUELENGTH-1 )
    {
-      // the flag is valid, so this slot on the fifo is ready to be computed
+      // Get actual index in the ringbuffer.
       uint8_t arrayIndex = queueHandle->headIndex%QUEUELENGTH;
       
-      // set data length
+      // Set data length in the message object.
       queueHandle->queue[arrayIndex].dataLength = dataLength;
       
-      // set data start in the databuffer
+      // Set data start pointer in the databuffer of the message object.
       queueHandle->queue[arrayIndex].dataStart = dataStart;
       
-      // set message status
+      // Set message status in the message object.
       queueHandle->queue[arrayIndex].messageStatus = READY_FOR_TX;
       
-      // increment fifo frame counter
+      // Update queue statistics.
       queueHandle->frameCounter++;
-      
-      // increment the queue length
       queueHandle->queueLength++;
       queueHandle->dataPacketsIN++;
       queueHandle->bytesIN += dataLength;
-      
-      // set the peak if necessary
       if( queueHandle->queueLength > queueHandle->queueLengthPeak )
       {
          queueHandle->queueLengthPeak = queueHandle->queueLength;
       }
       
-      // increment head index
+      // Increment absolute head index
       queueHandle->headIndex++;
       
-      // set receiving state on the queue object
+      // Set receiving state on the queue object.
       queueHandle->queue[queueHandle->headIndex%QUEUELENGTH].messageStatus = RECEIVING_RX;
 
-      // return new pointer
+      // Return new pointer.
       return queueHandle->queue[queueHandle->headIndex%QUEUELENGTH].data;
    }
 
-   // queue is full, return old pointer
+   // Queue is full, return old pointer.
    queueHandle->queueFull++;
    return queueHandle->queue[queueHandle->headIndex%QUEUELENGTH].data;
 }
@@ -233,9 +242,9 @@ inline uint8_t* queue_enqueue( uint8_t* dataStart, uint16_t dataLength, queue_ha
 // ----------------------------------------------------------------------------
 /// \brief     Returns pointer to the head buffer of the queue.
 ///
-/// \param     none
+/// \param     [in/out] queue_handle_t *queueHandle
 ///
-/// \return    none
+/// \return    uint8_t* data pointer
 uint8_t* queue_getHeadBuffer( queue_handle_t *queueHandle )
 {
    return queueHandle->queue[queueHandle->headIndex%QUEUELENGTH].data;
@@ -244,9 +253,9 @@ uint8_t* queue_getHeadBuffer( queue_handle_t *queueHandle )
 // ----------------------------------------------------------------------------
 /// \brief     Returns pointer to the tail buffer of the queue.
 ///
-/// \param     none
+/// \param     [in/out] queue_handle_t *queueHandle
 ///
-/// \return    none
+/// \return    uint8_t* data pointer
 uint8_t* queue_getTailBuffer( queue_handle_t *queueHandle )
 {
    return queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].data;

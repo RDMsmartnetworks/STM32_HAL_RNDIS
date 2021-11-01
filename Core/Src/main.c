@@ -3,8 +3,7 @@
 ///
 /// \brief     main C source file
 ///
-/// \details   Main c file as the applications entry point and for high level
-///            setup for the RTOS and the peripherals.
+/// \details   Main c file as the applications entry point.
 ///
 /// \author    Nico Korn
 ///
@@ -162,6 +161,7 @@ void startRndisTask( void *argument )
    usbQueue.output             = rs485_output;  
    queue_init(&usbQueue);
    
+   // loop forever and check for messages to be ready to send from the queues
    for(;;)
    {
       queue_manager( &uartQueue );

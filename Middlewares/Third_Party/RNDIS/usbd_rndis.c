@@ -299,7 +299,7 @@ USBD_ClassTypeDef USBD_RDNIS =
 };
 
 //------------------------------------------------------------------------------
-/// \brief     Returns rndis clas struct.      
+/// \brief     Returns rndis class struct.      
 ///
 /// \param     none
 ///
@@ -321,7 +321,8 @@ static uint8_t USBD_RNDIS_Init( USBD_HandleTypeDef *pdev, uint8_t cfgidx )
    UNUSED(cfgidx);
    (void)rndis_state; // opress unsued compiler warning
    
-   // Open Command IN EP 
+   // Open Command IN EP, this is the interrupt in endpoint used for communication
+   // on the control endpoints. The control endpoints are initialized not here.
    USBD_LL_OpenEP( pdev, RNDIS_NOTIFICATION_IN_EP, USBD_EP_TYPE_INTR, RNDIS_NOTIFICATION_IN_SZ );
   
    // Open EP IN 
@@ -330,7 +331,7 @@ static uint8_t USBD_RNDIS_Init( USBD_HandleTypeDef *pdev, uint8_t cfgidx )
    // Open EP OUT
    USBD_LL_OpenEP( pdev, RNDIS_DATA_OUT_EP, USBD_EP_TYPE_BULK, RNDIS_DATA_OUT_SZ );
    
-   // get memory for packet
+   // Set the data receive pointer.
    rndis_rx_buffer = (char*)queue_getHeadBuffer( &usbQueue );
    
    // Prepare Out endpoint to receive next packet
@@ -381,12 +382,12 @@ static uint8_t USBD_RNDIS_Setup( USBD_HandleTypeDef  *pdev, USBD_SetupReqTypedef
    switch ( req->bmRequest & USB_REQ_TYPE_MASK )
    {
       case USB_REQ_TYPE_CLASS :
-         if (req->wLength != 0) // is data setup packet?
+         if (req->wLength != 0) // Is it a data setup packet?
          {
             // Check if the request is Device-to-Host
             if (req->bmRequest & 0x80)
             {
-                  USBD_CtlSendData( pdev, encapsulated_buffer, ((rndis_generic_msg_t *)encapsulated_buffer)->MessageLength );
+               USBD_CtlSendData( pdev, encapsulated_buffer, ((rndis_generic_msg_t *)encapsulated_buffer)->MessageLength );
             }
             else // Host-to-Device requeset
             {
@@ -462,7 +463,7 @@ static uint8_t USBD_RNDIS_EP0_RxReady( USBD_HandleTypeDef *pdev )
             m->MessageLength = sizeof(rndis_keepalive_cmplt_t);
             m->Status = RNDIS_STATUS_SUCCESS;
          }
-         /* We have data to send back */
+         // We have data to send back
          USBD_LL_Transmit(&hUsbDeviceFS, RNDIS_NOTIFICATION_IN_EP, (uint8_t *)"\x01\x00\x00\x00\x00\x00\x00\x00", 8);
          break;
    
@@ -576,7 +577,7 @@ bool USBD_RNDIS_canSend(void)
 }
 
 //------------------------------------------------------------------------------
-/// \brief     Requests to send next packet uver rndis usb.
+/// \brief     Requests to send next packet over rndis usb.
 ///
 /// \param     [in]  const void *data
 /// \param     [in]  uint16_t size
