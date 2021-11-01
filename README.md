@@ -22,7 +22,7 @@ There is only one task running the queuex manager of both interfaces, not using 
 It should be easy to port the library to other st mcu's. Generate a new cdc usb project with cubemx and replace the usb relevant rndis files with the ones from this project.
 
 Info: 
-<br>The rndis library is based on the library from Sergey Fetisov: https://github.com/fetisov/lrndis and is using a rndis protocol library from Colin O'Flynn. For more general information about RNDIS visit: https://docs.microsoft.com/de-de/windows-hardware/drivers/network/overview
+<br>The rndis library is based on the library from Sergey Fetisov: https://github.com/fetisov/lrndis and is using a rndis protocol library from Colin O'Flynn. Many thanks for your efforts! For more general information about RNDIS visit: https://docs.microsoft.com/de-de/windows-hardware/drivers/network/overview
 
 <br>Versions: 
 <br>STM32_HAL_RNDIS 0.2.0.0 
