@@ -62,6 +62,8 @@ typedef enum
    NOT_INITIALIZED,
    UART_TO_USB,
    USB_TO_UART,
+   TCP_TO_USB,
+   USB_TO_TCP,
    SERVER_TO_USB,
    USB_TO_SERVER
 } message_direction_t;
@@ -115,6 +117,7 @@ void     queue_dequeue           ( queue_handle_t *queueHandle );
 uint8_t* queue_enqueue           ( uint8_t* dataStart, uint16_t dataLength, queue_handle_t *queueHandle );
 uint8_t* queue_getHeadBuffer     ( queue_handle_t *queueHandle );
 uint8_t* queue_getTailBuffer     ( queue_handle_t *queueHandle );
+uint8_t  queue_isFull            ( queue_handle_t *queueHandle );
 
 #endif /* __QUEUE_H */
 

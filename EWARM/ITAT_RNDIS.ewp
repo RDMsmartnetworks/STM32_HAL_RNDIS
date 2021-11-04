@@ -276,7 +276,7 @@
                 <option>
                     <name>CCAllowList</name>
                     <version>1</version>
-                    <state>11111110</state>
+                    <state>00000000</state>
                 </option>
                 <option>
                     <name>CCDebugInfo</name>
@@ -292,11 +292,12 @@
                 </option>
                 <option>
                     <name>IExtraOptionsCheck</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>IExtraOptions</name>
-                    <state></state>
+                    <state>--diag_suppress Pe1644</state>
+                    <state>--diag_suppress Pe177</state>
                 </option>
                 <option>
                     <name>CCLangConformance</name>
@@ -349,6 +350,9 @@
                     <state>$PROJ_DIR$/../Drivers/CMSIS/Device/ST/STM32F4xx/Include</state>
                     <state>$PROJ_DIR$\..\Drivers\CMSIS\Include</state>
                     <state>$PROJ_DIR$\..\Middlewares\Third_Party\RNDIS</state>
+                    <state>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include</state>
+                    <state>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\portable\Compiler\IAR</state>
+                    <state>$PROJ_DIR$\..\Middlewares\Third_Party\printf-master</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -364,7 +368,7 @@
                 </option>
                 <option>
                     <name>CCOptLevel</name>
-                    <state>3</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CCOptStrategy</name>
@@ -373,7 +377,7 @@
                 </option>
                 <option>
                     <name>CCOptLevelSlave</name>
-                    <state>3</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CCPosIndRopi</name>
@@ -1076,7 +1080,19 @@
                 <group>
                     <name>inc</name>
                     <file>
+                        <name>$PROJ_DIR$\..\Core\Inc\crc32.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\Core\Inc\dhcpserver.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\Core\Inc\dnsserver.h</name>
+                    </file>
+                    <file>
                         <name>$PROJ_DIR$\..\Core\Inc\FreeRTOSConfig.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\Core\Inc\FreeRTOSIPConfig.h</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\Core\Inc\main.h</name>
@@ -1085,15 +1101,27 @@
                         <name>$PROJ_DIR$\..\Core\Inc\queuex.h</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\Core\Inc\rs485.h</name>
-                    </file>
-                    <file>
                         <name>$PROJ_DIR$\..\Core\Inc\stm32f4xx_hal_conf.h</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\Core\Inc\stm32f4xx_it.h</name>
                     </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\Core\Inc\tcp.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\Core\Inc\webserver.h</name>
+                    </file>
                 </group>
+                <file>
+                    <name>$PROJ_DIR$\..\Core\Src\crc32.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Core\Src\dhcpserver.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Core\Src\dnsserver.c</name>
+                </file>
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\freertos.c</name>
                 </file>
@@ -1104,9 +1132,6 @@
                     <name>$PROJ_DIR$\..\Core\Src\queuex.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\Core\Src\rs485.c</name>
-                </file>
-                <file>
                     <name>$PROJ_DIR$\..\Core\Src\stm32f4xx_hal_msp.c</name>
                 </file>
                 <file>
@@ -1114,6 +1139,12 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\stm32f4xx_it.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Core\Src\tcp.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Core\Src\webserver.c</name>
                 </file>
             </group>
             <group>
@@ -1271,6 +1302,96 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS\Source\timers.c</name>
+            </file>
+        </group>
+        <group>
+            <name>FreeRTOS_TCP</name>
+            <group>
+                <name>inc</name>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_ARP.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_DHCP.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_DNS.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_errno_TCP.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_IP.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_IP_Private.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_Sockets.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_Stream_Buffer.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_TCP_IP.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_TCP_WIN.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_UDP_IP.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOSIPConfigDefaults.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\IPTraceMacroDefaults.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\NetworkBufferManagement.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\NetworkInterface.h</name>
+                </file>
+            </group>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\portable\BufferManagement\BufferAllocation_2.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\FreeRTOS_ARP.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\FreeRTOS_DHCP.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\FreeRTOS_DNS.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\FreeRTOS_IP.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\FreeRTOS_Sockets.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\FreeRTOS_Stream_Buffer.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\FreeRTOS_TCP_IP.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\FreeRTOS_TCP_WIN.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\FreeRTOS_UDP_IP.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\portable\NetworkInterface\HAL_RNDIS_STM32F411\NetworkInterface.c</name>
+            </file>
+        </group>
+        <group>
+            <name>PRINTF</name>
+            <file>
+                <name>$PROJ_DIR$\..\Middlewares\Third_Party\printf-master\printf.c</name>
             </file>
         </group>
         <group>

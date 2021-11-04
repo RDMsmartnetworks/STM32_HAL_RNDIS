@@ -266,4 +266,20 @@ uint8_t* queue_getTailBuffer( queue_handle_t *queueHandle )
    return queueHandle->queue[queueHandle->tailIndex%QUEUELENGTH].data;
 }
 
+// ----------------------------------------------------------------------------
+/// \brief     Check if queue is full.
+///
+/// \param     [in/out] queue_handle_t *queueHandle
+///
+/// \return    0 = full, 1 = not full
+uint8_t queue_isFull( queue_handle_t *queueHandle )
+{
+      // Ringbuffer not full?
+   if( (queueHandle->headIndex - queueHandle->tailIndex) < QUEUELENGTH-1 )
+   {
+      return 1;
+   }
+   return 0;
+}
+
 /********************** (C) COPYRIGHT Reichle & De-Massari *****END OF FILE****/

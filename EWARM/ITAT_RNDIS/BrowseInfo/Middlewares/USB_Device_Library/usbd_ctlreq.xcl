@@ -37,6 +37,12 @@ D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Drivers\CMSIS\Include
 -I
 D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\RNDIS
 -I
+D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include
+-I
+D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\portable\Compiler\IAR
+-I
+D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\printf-master
+-I
 C:\Program Files\IAR Systems\Embedded Workbench 9.0\arm\inc\c\aarch32
 -I
 C:\Program Files\IAR Systems\Embedded Workbench 9.0\arm\inc
@@ -68,6 +74,12 @@ D:\GitHub\STM32_HAL_RNDIS\Drivers\CMSIS\Device\ST\STM32F4xx\Include
 D:\GitHub\STM32_HAL_RNDIS\Drivers\CMSIS\Include
 -I
 D:\GitHub\STM32_HAL_RNDIS\Middlewares\Third_Party\RNDIS
+-I
+D:\GitHub\STM32_HAL_RNDIS\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include
+-I
+D:\GitHub\STM32_HAL_RNDIS\Middlewares\Third_Party\FreeRTOS-Plus-TCP\portable\Compiler\IAR
+-I
+D:\GitHub\STM32_HAL_RNDIS\Middlewares\Third_Party\printf-master
 -D__CHAR_BITS__=8
 -D__CHAR_MAX__=0xff
 -D__CHAR_MIN__=0
@@ -255,6 +267,7 @@ D:\GitHub\STM32_HAL_RNDIS\Middlewares\Third_Party\RNDIS
 -D__DEF_STACK_MEM_INDEX__=0
 -D__PRAGMA_PACK_ON__=1
 -D__MULTIPLE_INHERITANCE__=1
+-D__FOR_DEBUG__=
 -D__AAPCS_VFP__=1
 -D__ARM4TM__=4
 -D__ARM5TM__=5

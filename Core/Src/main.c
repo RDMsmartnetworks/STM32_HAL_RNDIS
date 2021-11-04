@@ -30,32 +30,17 @@
 #include "usb_device.h"
 #include "usb_device.h"
 #include "queuex.h"
-#include "rs485.h"
+#include "tcp.h"
+#include "dhcpserver.h"
 
 // Private typedef *************************************************************
 
 // Private define *************************************************************
 
 // Private variables **********************************************************
-/* Definitions for defaultTask */
-osThreadId_t rndisTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
-};
-
-/* Definitions for myEvent01 */
-osEventFlagsId_t myEvent01Handle;
-const osEventFlagsAttr_t myEvent01_attributes = {
-  .name = "myEvent01"
-};
-
-// queue declerations
-queue_handle_t uartQueue;
+queue_handle_t tcpQueue;
 queue_handle_t usbQueue;
    
-
 // Private function prototypes ************************************************
 void SystemClock_Config   ( void );
 void startRndisTask       ( void *argument );
@@ -76,14 +61,22 @@ int main( void )
    // Configure the system clock
    SystemClock_Config();
    
+   // init peripherals
+   tcp_init();
+   usb_init();
+   
+   // set the queue on the uart io
+   tcpQueue.messageDirection  = TCP_TO_USB;
+   tcpQueue.output            = usb_output;
+   queue_init(&tcpQueue);
+   
+   // set the queue on the usb io
+   usbQueue.messageDirection   = USB_TO_TCP;
+   usbQueue.output             = tcp_output;  
+   queue_init(&usbQueue);
+   
    // Init scheduler
    osKernelInitialize();
-   
-   // create rndis task
-   rndisTaskHandle = osThreadNew( startRndisTask, NULL, &defaultTask_attributes );
-   
-   // create event ??
-   myEvent01Handle = osEventFlagsNew(&myEvent01_attributes);
    
    // Start scheduler
    osKernelStart();
@@ -92,6 +85,20 @@ int main( void )
    while (1)
    {
    }
+}
+
+// ----------------------------------------------------------------------------
+/// \brief     Called by the task.c freertos module. Calling origin is the idle
+///            task. Never block this function for too long otherwise the
+///            watchdog wont be kicked thus a restart will be initiated.
+///
+/// \param     none
+///
+/// \return    none
+void vApplicationIdleHook( void )
+{
+   queue_manager( &tcpQueue );
+   queue_manager( &usbQueue );
 }
 
 // ----------------------------------------------------------------------------
@@ -136,36 +143,6 @@ void SystemClock_Config( void )
    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
    {
       Error_Handler();
-   }
-}
-
-// ----------------------------------------------------------------------------
-/// \brief     RNDIS task.
-///
-/// \param     [in]  void *argument
-///
-/// \return    none
-void startRndisTask( void *argument )
-{
-   // init peripherals
-   rs485_init();
-   usb_init();
-   
-   // set the queue on the uart io
-   uartQueue.messageDirection  = UART_TO_USB;
-   uartQueue.output            = usb_output;
-   queue_init(&uartQueue);
-   
-   // set the queue on the usb io
-   usbQueue.messageDirection   = USB_TO_UART;
-   usbQueue.output             = rs485_output;  
-   queue_init(&usbQueue);
-   
-   // loop forever and check for messages to be ready to send from the queues
-   for(;;)
-   {
-      queue_manager( &uartQueue );
-      queue_manager( &usbQueue );
    }
 }
 

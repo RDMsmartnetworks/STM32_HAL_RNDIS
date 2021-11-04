@@ -37,6 +37,10 @@ D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Drivers\CMSIS\Include
 -I
 D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\RNDIS
 -I
+D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include
+-I
+D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\portable\Compiler\IAR
+-I
 C:\Program Files\IAR Systems\Embedded Workbench 9.0\arm\inc\c\aarch32
 -I
 C:\Program Files\IAR Systems\Embedded Workbench 9.0\arm\inc
@@ -68,6 +72,10 @@ D:\GitHub\STM32_HAL_RNDIS\Drivers\CMSIS\Device\ST\STM32F4xx\Include
 D:\GitHub\STM32_HAL_RNDIS\Drivers\CMSIS\Include
 -I
 D:\GitHub\STM32_HAL_RNDIS\Middlewares\Third_Party\RNDIS
+-I
+D:\GitHub\STM32_HAL_RNDIS\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include
+-I
+D:\GitHub\STM32_HAL_RNDIS\Middlewares\Third_Party\FreeRTOS-Plus-TCP\portable\Compiler\IAR
 -D__CHAR_BITS__=8
 -D__CHAR_MAX__=0xff
 -D__CHAR_MIN__=0

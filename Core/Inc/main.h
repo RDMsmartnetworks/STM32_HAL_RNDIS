@@ -39,7 +39,8 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 
-/* Exported macro ------------------------------------------------------------*/
+/* Exported defines ----------------------------------------------------------*/
+#define RNDIS_HWADDR    0xDA, 0xBE, 0xEF, 0x15, 0xDE, 0xAD
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);

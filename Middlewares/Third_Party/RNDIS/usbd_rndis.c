@@ -259,7 +259,7 @@ static uint8_t encapsulated_buffer[ENC_BUF_SIZE];
 // Global variables ***********************************************************
 extern USBD_HandleTypeDef  hUsbDeviceFS;
 extern queue_handle_t      usbQueue;
-extern queue_handle_t      uartQueue;
+extern queue_handle_t      tcpQueue;
 
 // Private function prototypes ************************************************
 static uint8_t    USBD_RNDIS_Init                           ( USBD_HandleTypeDef *pdev, uint8_t cfgidx );
@@ -341,7 +341,7 @@ static uint8_t USBD_RNDIS_Init( USBD_HandleTypeDef *pdev, uint8_t cfgidx )
    tx.state = TX_STATE_READY;
    
    // init the queue
-   queue_init(&uartQueue);
+   queue_init(&tcpQueue);
 
    return USBD_OK;
 }
