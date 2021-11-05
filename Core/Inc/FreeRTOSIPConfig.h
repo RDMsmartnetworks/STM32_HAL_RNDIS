@@ -158,7 +158,7 @@ set to 1 if a valid configuration cannot be obtained from a DHCP server for any
 reason.  The static configuration used is that passed into the stack by the
 FreeRTOS_IPInit() function call. */
 #define ipconfigUSE_DHCP 0
-#define ipconfigDHCP_REGISTER_HOSTNAME 1
+#define ipconfigDHCP_REGISTER_HOSTNAME 0
 #define ipconfigDNS_USE_CALLBACKS 1
 
 /* if dhcp doesn't respond on renewal use auto ip fallback */
