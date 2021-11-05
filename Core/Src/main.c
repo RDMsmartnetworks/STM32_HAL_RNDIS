@@ -31,6 +31,7 @@
 #include "usb_device.h"
 #include "queuex.h"
 #include "tcp.h"
+#include "led.h"
 #include "dhcpserver.h"
 
 // Private typedef *************************************************************
@@ -62,6 +63,7 @@ int main( void )
    SystemClock_Config();
    
    // init peripherals
+   led_init();
    tcp_init();
    usb_init();
    
@@ -161,6 +163,10 @@ void HAL_TIM_PeriodElapsedCallback( TIM_HandleTypeDef *htim )
    if (htim->Instance == TIM1)
    {
       HAL_IncTick();
+   }
+   if (htim->Instance == TIM2)
+   {
+      led_set();
    }
 }
 

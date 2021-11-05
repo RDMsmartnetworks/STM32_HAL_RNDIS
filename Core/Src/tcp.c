@@ -43,33 +43,42 @@
 
 // Private define *************************************************************
 #define RXBUFFEROFFSET (uint16_t)(44u) // +44 because of the rndis usb header siz
-#define HOSTNAME        "rndis-webserver.go"
-#define HOSTNAMECAP     "RNDIS-WEBSERVER.go"
-#define DEVICENAME      "rndis-webserver.go"
-#define DEVICENAMECAP   "RNDIS-WEBSERVER.go"
+#define HOSTNAME        "rndis-webserver"
+#define HOSTNAMECAP     "RNDIS-WEBSERVER"
+#define DEVICENAME      "rndis-webserver"
+#define DEVICENAMECAP   "RNDIS-WEBSERVER"
+#define HOSTNAMEDNS     "home.rndis-webserver"
+#define MAC_HWADDR      0xAD, 0xDE, 0x15, 0xEF, 0xBE, 0xDA 
 
 // Private types     **********************************************************
-typedef struct s_frame
+typedef struct FRAME_s
 {
    uint8_t *data;
    uint16_t length;
-} t_frame;
+} FRAME_t;
+typedef struct MAC_STATISTIC_s
+{
+   uint32_t counterTxError;
+   uint32_t counterRxFrame;
+   uint32_t counterTxFrame;
+}MAC_STATISTIC_t;
 
 // Global variables ***********************************************************
 const uint8_t ucIPAddressFLASH[4]         = {IP1, IP2, IP3, IP4};
-const uint8_t ucMACAddressFLASH[6]        = {RNDIS_HWADDR};    
+const uint8_t ucMACAddressFLASH[6]        = {MAC_HWADDR};    
 const uint8_t ucNetMaskFLASH[4]           = {255, 255, 255, 0};
 const uint8_t ucGatewayAddressFLASH[4]    = {IP1, IP2, IP3, IP4};   
 const uint8_t ucDNSServerAddressFLASH[4]  = {IP1, IP2, IP3, IP4};    
 
 // Private variables **********************************************************
 // Use by the pseudo random number generator.
+static MAC_STATISTIC_t  mac_statistic;
 static const char       *mainHOST_NAME                   = {HOSTNAME};
 static const char       *mainDEVICE_NICK_NAME            = {DEVICENAME};
 static const char       *mainHOST_NAMEcapLetters         = {HOSTNAMECAP};
 static const char       *mainDEVICE_NICK_NAMEcapLetters  = {DEVICENAMECAP};
 static FlagStatus       processingIdle = SET;
-static t_frame          currentFrame;
+static FRAME_t          currentFrame;
 extern queue_handle_t   tcpQueue;
 extern queue_handle_t   usbQueue;
 static leasetableObj_t leasetable[DHCPPOOLSIZE] =
@@ -162,13 +171,9 @@ void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent )
 		{
          // start webserver
          webserver_init();
-         //xTaskCreate( http_startHost, "http server listener", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+1, &serverTask );
          
          // start dhcp server
          dhcpserver_init(&dhcpconf);
-		 
-         // start dns service
-         dnsserver_init();
 
          // set the task created flag
          xTasksAlreadyCreated = pdTRUE;
@@ -230,9 +235,6 @@ extern uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress, ui
 #if( ipconfigUSE_LLMNR != 0 ) || ( ipconfigUSE_NBNS != 0 ) || ( ipconfigDHCP_REGISTER_HOSTNAME == 1 )
 const char *pcApplicationHostnameHook( void )
 {
-   /* Assign the name "PCU" to this network node.  This function will
-   be called during the DHCP: the machine will be registered with an IP
-   address plus this name. */
    return mainDEVICE_NICK_NAME;
 }
 
@@ -260,6 +262,7 @@ const char *pcApplicationHostnameHookCAP( void )
 BaseType_t xApplicationDNSQueryHook( const char *pcName )
 {
    static uint32_t llmnrsuccessCounter;
+   static uint32_t llmnrfailCounter;
 	BaseType_t     xReturn;
 
    // Determine if a name lookup is for this node.  Two names are given
@@ -322,6 +325,7 @@ BaseType_t xApplicationDNSQueryHook( const char *pcName )
       }
       else
       {
+         llmnrfailCounter++;
          xReturn = pdFAIL;
       }
    }
@@ -339,13 +343,19 @@ BaseType_t xApplicationDNSQueryHook( const char *pcName )
 /// \return    0 = not send, 1 = send
 uint8_t tcp_output( uint8_t* buffer, uint16_t length )
 {
-   if( processingIdle )
+   if( buffer == NULL || length == 0 )
+   {
+      queue_dequeue( &usbQueue );
+      return 0;
+   }
+
+   if( processingIdle != RESET )
    {
       // set states to processing new frame from the mac layer
-      processingIdle = RESET;
-      tcp_invokeMacTask();
       currentFrame.data = buffer;
       currentFrame.length = length;
+      processingIdle = RESET;
+      tcp_invokeMacTask();
       return 1;
    }
    
@@ -378,13 +388,7 @@ static void tcp_macTask( void *pvParameters )
       ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
         
       rxMacCallCounter++;
-        
-      if( currentFrame.data == NULL )
-      {
-         processingIdle = SET;
-         continue;
-      }
-        
+
       // set the bytes received variable
       xBytesReceived = currentFrame.length;
       xFramePointer = currentFrame.data;
@@ -399,7 +403,6 @@ static void tcp_macTask( void *pvParameters )
       {
          // copy data onto the heap release frame from fifo
          memcpy(pxBufferDescriptor->pucEthernetBuffer, (uint8_t*)xFramePointer, xBytesReceived);
-         queue_dequeue( &usbQueue );
          
          // set the pointer back
          pxBufferDescriptor->xDataLength = xBytesReceived;
@@ -452,6 +455,8 @@ static void tcp_macTask( void *pvParameters )
 
       // reset the processing frame flag
       processingIdle = SET;
+      mac_statistic.counterTxFrame++;  // this is likely to send a frame from rndis view
+      queue_dequeue( &usbQueue );
    }
 }
 
@@ -585,6 +590,9 @@ uint8_t tcp_enqueue( uint8_t* data, uint16_t length )
    //{
    //   *(rxBuffer+length+i) = *(crcFragment+j);
    //}
+   
+   // this is likely to receive a frame on the rndis part
+   mac_statistic.counterRxFrame++;
    
    // enqueue to the ringbuffer
    queue_enqueue( rxBuffer, (uint16_t)(length), &tcpQueue );

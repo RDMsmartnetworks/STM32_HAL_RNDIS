@@ -63,7 +63,7 @@
 #define RNDIS_LINK_SPEED 12000000                       /* Link baudrate (12Mbit/s for USB-FS) */
 #define RNDIS_VENDOR     "fetisov"                      /* NIC vendor name */
 //#define RNDIS_HWADDR     0x20,0x89,0x84,0x6A,0x96,0xAB  /* MAC-address to set to host interface */
-//#define RNDIS_HWADDR     0xDA, 0xBE, 0xEF, 0x15, 0xDE, 0xAD  /* MAC-address to set to host interface */
+#define RNDIS_HWADDR     0xDA, 0xBE, 0xEF, 0x15, 0xDE, 0xAD  /* MAC-address to set to host interface */
 #define CDC_DATA_HS_MAX_PACKET_SIZE                 512U  /* Endpoint IN & OUT Packet size */
 #define CDC_DATA_FS_MAX_PACKET_SIZE                 64U  /* Endpoint IN & OUT Packet size */
     

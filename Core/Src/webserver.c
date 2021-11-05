@@ -48,6 +48,7 @@
 #include  <string.h>
 #include  <stdlib.h>
 #include "webserver.h"
+#include "led.h"
 #include "printf.h"
 
 #include "cmsis_os.h"
@@ -60,7 +61,7 @@
 
 // Private defines ************************************************************
 #define URIBUFFER       ( 500u )
-#define TXBUFFERSIZE    ( 5000u )
+#define TXBUFFERSIZE    ( 4000u )
 
 #define RMLOGO          "<img src='data:image/png;base64,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'/>"
 #define FAVICON         "<link rel=\"shortcut icon\" href=\"data:image/gif;base64,R0lGODlhIAAgAHAAACwAAAAAIAAgAIf////s2+Pqt8j/wNT/v836wsv/xM7/wM7/w9L6ws38uMP4ZHTQCyfgAB7cABnXBhzeBh7bABjiAR/iAB3UAC3wdYfZAwvdAybkAyHqBivjABrgAyblASbiASHjAiLkACXwZ4XkABHsBDTgBCjVASnfASbgBS3eACnhACjiASnXBR7tfpHdAxHpAC3sAifiACXtACXiACbfACXjASfjABnmY3XbBgrYAB7qAB3tAB3tABrgAB3iAB7hAB7ZCCX31+z7vbLjycztw8T0v8fxw8Puysr3vsf1wMj/s6/6v93+m57oo7Xxnaz/nrX3m6rworD9mbH5nLH6nbL1pKPhaXLbBQPfABvhABDrAx3pABDeABDjABbfABXgARbdASXgfY/iABD9AjfcACLTByjoByfgAiffAyfkABvya4ngABDvAzPUAyLfASjjAiTlACndASfeACXkARzleIvZBRHqACvhACLoACjeASDnASjdBCHpaH7gDhfkAyvkBSLqACfeBSDgBybnBSrkBCbjACn67//3x7vz2N354Nz/0+D62t310tj72dr62Nn9zcH4rc7zgobqjKTskJ/6gaDvjqLsiKDwip/viZ7lhYnuanjjDhDjACDhABfmABjdARrnAh/hABniABruAS/ddILTBAzqACjiBiLsCC3hASPkAyPlBCTYAh72b4/iABXwBDXUAyPeACvlACvdACvdACbeACfgAinhBR7vdXLVABnnABvSARflBSDdBB/mAB/vaHnmEz70FULfFzvsFD3lFD7pCzrnEDrVFDMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAI/wABCBxIsKDBgwgTKlzIsKHDhxAjPvwhABEBAgYIWDTAsWPGhwEcXeR4caQAjCcVPKyRS4uWllrEuJQpE4aWNQ8rxBSjRowYGD6BAv0p5iEILT19xopFtKnPh5a0wOgJYyhPnz3VaFlZZU2WqkFpii3q8IeCIEWKFCoiwMDJIigJAHmYRMkTJk2gPIHCly9evlMeUqniMksWwi4TJybbUJSWMGLWXFUqhinTrQ6PqlkTayhTykEfOhaK9SfVqU8zZ2I6VM1Qq0AhFklEKFGiQwFu07Ztm9FDRxUsWZIECZJw4Y+OW7L1sBfiLC5tztQCHanoUVl9EgUrNJdRpKU/Ky5dyvShLTFZcml/7TPLT8wNexX7JezXfDXFiOknZp9YMYkABijggAQWaOCBAAQEADs=\" />"
@@ -78,7 +79,7 @@ const osThreadAttr_t webserverListenTask_attributes = {
 osThreadId_t webserverHandleTaskToNotify;
 const osThreadAttr_t webserverHandleTask_attributes = {
   .name = "webserverHandleTask",
-  .stack_size = 8 * configMINIMAL_STACK_SIZE * 4,
+  .stack_size = 4 * configMINIMAL_STACK_SIZE * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
 
@@ -93,7 +94,14 @@ static const char *webpage_top = {
    "Content-Type: text/html\r\n" //"Content-Type: text/html; charset=utf-8\r\n"
    "Keep-Alive: timeout=20\r\n" 
    "Connection: keep-alive\r\n\r\n"
+
    "<html><head>"
+      
+   "<style type='text/css'>"
+   // header text
+   "#box1 {background-color: orange; background-image: linear-gradient(red, black);}"
+   "</style>"
+      
    FAVICON
    "<title>RNDIS Webserver Example</title>"
    "<style> div.main {"
@@ -105,30 +113,17 @@ static const char *webpage_top = {
    "</head>"
    "<body><div class='main'>"
    // Top header bar ////////////////////////////////////////////////////////
-   "<p><div style=\"height:72;border:1px solid #000;background-color: #000000;\">"
-   //RMLOGO
-   "<font size=\"20\" font color=\"white\"><b>RNDIS Webserver Example</b></font>"
+   //"<p><div style=\"height:55;border:1px solid #000;background-color: #000000;\">"
+   "<p><div id='box1' style='height:55;'>"
+   "<font size='20' font color='white'><b>RNDIS Webserver Example</b></font>"
    "</div></p>"
    //////////////////////////////////////////////////////////////////////////
    "<br />"
 };
 
-static const char *webpage_bottom = {
-   "<br>"  
-   "<button onclick=\"goBack()\" style=\"width:200px\">Go back</button>"
-   "<script>"
-   "function goBack() {"
-   "window.history.back();"
-   "}"
-   "</script>"
-   "<br></br>"  
-   "<p style=\"text-align:center;\">&#169 Copyright 2021 by R&M</p>" 
-   "</div></body></html>"
-};
-
 static const char *webpage_bottom_no_btn = {
    "<br>"    
-   "<p style=\"text-align:center;\">&#169 Copyright 2021 by R&M</p>" 
+   "<p style=\"text-align:center;\">&#169 Copyright 2021 by Nico</p>" 
    "</div></body></html>"
 };
 
@@ -180,29 +175,30 @@ void webserver_deinit( void )
 /// \return    none
 static void webserver_listen( void *pvParameters )
 {
-   struct freertos_sockaddr xClient, xBindAddress;
-   Socket_t xListeningSocket, xConnectedSocket;
-   socklen_t xSize = sizeof( xClient );
-   const TickType_t xReceiveTimeOut = portMAX_DELAY;
-   const BaseType_t xBacklog = 3;
+   struct freertos_sockaddr   xClient, xBindAddress;
+   Socket_t                   xListeningSocket, xConnectedSocket;
+   socklen_t                  xSize          = sizeof( xClient );
+   const TickType_t           timeout        = portMAX_DELAY;
+   const BaseType_t           xBacklog       = 2;
    
-   // Attempt to open the socket.
+   /* Attempt to open the socket. */
    xListeningSocket = FreeRTOS_socket( FREERTOS_AF_INET, FREERTOS_SOCK_STREAM, FREERTOS_IPPROTO_TCP );
 
-   // Check the socket was created.
+   /* Check the socket was created. */
    configASSERT( xListeningSocket != FREERTOS_INVALID_SOCKET );
 
-   // Set a time out so accept() will just wait for a connection.
-   FreeRTOS_setsockopt( xListeningSocket, 0, FREERTOS_SO_RCVTIMEO, &xReceiveTimeOut, sizeof( xReceiveTimeOut ) );
+   /* Set a time out so accept() will just wait for a connection. */
+   FreeRTOS_setsockopt( xListeningSocket, 0, FREERTOS_SO_RCVTIMEO, &timeout, sizeof( timeout ) );
 
-   // Set the listening sblink to 80 as general for http.
+   /* Set the listening sblink to 80 as general for http. */
    xBindAddress.sin_port = ( uint16_t ) 80;
    xBindAddress.sin_port = FreeRTOS_htons( xBindAddress.sin_port );
 
-   // Bind the socket to the sblink that the client RTOS task will send to.
+   /* Bind the socket to the sblink that the client RTOS task will send to. */
    FreeRTOS_bind( xListeningSocket, &xBindAddress, sizeof( xBindAddress ) );
 
-   // Set the socket into a listening state so it can accept connections.
+   /* Set the socket into a listening state so it can accept connections.
+   The maximum number of simultaneous connections is limited to 20. */
    FreeRTOS_listen( xListeningSocket, xBacklog );
 
    for( ;; )
@@ -212,7 +208,7 @@ static void webserver_listen( void *pvParameters )
       configASSERT( xConnectedSocket != FREERTOS_INVALID_SOCKET );
 
       // Spawn a RTOS task to handle the connection.
-      webserverHandleTaskToNotify = osThreadNew( webserver_handle, NULL, &webserverHandleTask_attributes );
+      webserverHandleTaskToNotify = osThreadNew( webserver_handle, (void*)xConnectedSocket, &webserverHandleTask_attributes );
    }
 }
 
@@ -333,7 +329,7 @@ static void webserver_handle( void *pvParameters )
             if(memcmp((char const*)uri, "/home", 5u) == 0)
             {
                // mainpage
-               webserver_homepage(pageBuffer, TXBUFFERSIZE, xConnectedSocket);
+               webserver_homepage( pageBuffer, TXBUFFERSIZE, xConnectedSocket );
                
                // listen to the socket again
                continue;
@@ -341,7 +337,7 @@ static void webserver_handle( void *pvParameters )
             else
             {
                // send 400
-               webserver_400(pageBuffer, TXBUFFERSIZE, xConnectedSocket);
+               webserver_homepage( pageBuffer, TXBUFFERSIZE, xConnectedSocket );
                
                // listen to the socket again
                continue;
@@ -367,8 +363,31 @@ static void webserver_handle( void *pvParameters )
             memcpy(uri, sp1, len);
             uri[len] = '\0';
             
-            if (strncmp((char const*)uri, "/led_on", 7u) == 0)
+            if (strncmp((char const*)uri, "/led_toggle", 10u) == 0)
             {
+               // toggle led
+               led_toggle();
+               
+               webserver_204(pageBuffer, TXBUFFERSIZE, xConnectedSocket);
+
+               // listen to the socket again
+               continue; 
+            }
+            else if (strncmp((char const*)uri, "/led_set_value/", 15u) == 0)
+            {
+               uint8_t value;
+               
+               // toggle led
+               value = strtol( (char const*)&uri[15u], NULL, 10u );
+               
+               // check if value is valid
+               if( value <= 40 )
+               {
+                  // set led pwm
+                  led_setDuty(value);
+               }
+               
+               // send ok rest api
                webserver_204(pageBuffer, TXBUFFERSIZE, xConnectedSocket);
 
                // listen to the socket again
@@ -387,43 +406,37 @@ static void webserver_handle( void *pvParameters )
       else if( lengthOfbytes == 0 )
       {
          // No data was received, but FreeRTOS_recv() did not return an error. Timeout?
-         etimeout++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                        
+         etimeout++;                                                       
          break;    
       }
       else if( lengthOfbytes == pdFREERTOS_ERRNO_ENOMEM )                                                                                        
       {                                                                                                                    
          // Error (maybe the connected socket already shut down the socket?). Attempt graceful shutdown.                   
-         enomem++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                        
+         enomem++;                                                      
          break;
       } 
       else if( lengthOfbytes == pdFREERTOS_ERRNO_ENOTCONN )                                                                   
       {                                                                                                                       
          // Error (maybe the connected socket already shut down the socket?). Attempt graceful shutdown.                      
-         enotconn++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                           
+         enotconn++;                                                        
          break;
       } 
       else if( lengthOfbytes == pdFREERTOS_ERRNO_EINTR )                                                                      
       {                                                                                                                       
          // Error (maybe the connected socket already shut down the socket?). Attempt graceful shutdown.                      
-         eintr++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                           
+         eintr++;                                                        
          break;
       } 
       else if( lengthOfbytes == pdFREERTOS_ERRNO_EINVAL )                                                                      
       {                                                                                                                       
          // Error (maybe the connected socket already shut down the socket?). Attempt graceful shutdown.                      
-         einval++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                           
+         einval++;                                                          
          break;
       } 
       else
       {                                                                                                                       
          // Error (maybe the connected socket already shut down the socket?). Attempt graceful shutdown.                      
-         eelse++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                           
+         eelse++;                                                        
          break;
       } 
    }
@@ -461,31 +474,63 @@ static void webserver_handle( void *pvParameters )
 /// \return    none
 static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, Socket_t xConnectedSocket )
 {
-   uint16_t 		stringLength;
-   //float    		temperature;
-   //float    		voltage;
-   uint32_t 		totalSeconds;
-   uint32_t 		days;
-   uint32_t 		hours;
-   uint32_t 		minutes;
-   uint32_t 		seconds;
-   uint8_t  		*ipAddress8b;
-   uint32_t 		ipAddress;
-   uint32_t 		netMask;
-   uint32_t 		dnsAddress;
-   uint32_t 		gatewayAddress;
+   uint16_t 		   stringLength;
+   uint32_t 		   totalSeconds;
+   uint32_t 		   days;
+   uint32_t 		   hours;
+   uint32_t 		   minutes;
+   uint32_t 		   seconds;
+   uint8_t  		   *ipAddress8b;
+   uint32_t 		   ipAddress;
+   uint32_t 		   netMask;
+   uint32_t 		   dnsAddress;
+   uint32_t 		   gatewayAddress;
    const uint8_t* 	stackMacAddress;
+   BaseType_t        xBytesSent = 0;
+   static uint32_t   txError;
    
    static const char *webpage_panelcontrollerMonitor = {
+      
+      "<style type='text/css'>"
+      // header text
+      "#box1 {background-color: orange; background-image: linear-gradient(red, black);}"
+      // slider
+      ".slidecontainer {width: 100%;}"
+      ".slider {-webkit-appearance: none;width: 250px;height: 15px;border-radius: 5px;background: #d3d3d3;outline: none;opacity: 0.7;-webkit-transition: .2s;transition: opacity .2s;}"
+      ".slider:hover {opacity: 1;}"
+      ".slider::-moz-range-thumb {width: 25px;height: 25px;border-radius: 50%;background: #04AA6D;cursor: pointer;}"
+      "</style>"
+      
       "<p><h3>Homepage</h3></p>"
       "<p>IP: %d.%d.%d.%d</p>"
       "<p>MAC: %02x:%02x:%02x:%02x:%02x:%02x</p>"
       "<p>Uptime: %d days, %d hours, %d minutes, %d seconds</p>"
       "<p>Free Heap: %d bytes</p>"
-      //"<p>Temperature: %.1f C</p>"
-      //"<p>Voltage: %.2f V</p>"
-      //"<p><button style=\"width:200px\" onclick=\"location.href='/sb_toppage'\" type='button'>sensorbars</button></p>"   
-      "<p><form action=\"restart_pcu\" method=\"post\"><button  style=\"width:200px\">Led On</button></form></p>"
+      //"<p><form action='led_toggle' method='post'><button  style='width:200px'>Toggle Led</button></form></p>"
+         
+      "<p><div class='slidecontainer'>"
+         "Dim Led<input type='range' min='1' max='40' value=%d class='slider' id='myRange'>"
+      "</div></p>" 
+         
+      "<script>"
+      "var xhr=new XMLHttpRequest();"
+      "var slider=document.getElementById('myRange');"
+      "var block=0;"
+         
+      "function unblock() {block=0;}"
+      
+      "slider.oninput=function(){"
+         "if(block==0){"
+            "block=1;"
+            "var urlpost='/led_set_value/'+this.value;"
+            "xhr.open('POST', urlpost, true);"
+            "xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');"
+            "xhr.send('zero');"
+            "setTimeout(unblock, 250);"
+         "}"
+      "}"
+      "</script>"
+          
       "<p></p>"
       "<p>Guest counter: %d</p>" 
       "<br />"
@@ -499,7 +544,12 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
    // send fragment of the webpage//////////////////////////////////////////////
    if( stringLength < pageBufferSize )
    {
-      FreeRTOS_send( xConnectedSocket, pageBuffer, stringLength, 0 );
+      xBytesSent = FreeRTOS_send( xConnectedSocket, pageBuffer, stringLength, 0 );
+      
+      if( xBytesSent != stringLength )
+      {
+         txError++;
+      }
    }
    /////////////////////////////////////////////////////////////////////////////
    
@@ -515,8 +565,8 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
    minutes        = (totalSeconds / 60) % 60;     
    seconds        = totalSeconds % 60;            
    guestCounter++;
-   stringLength = snprintf(0, 0, webpage_panelcontrollerMonitor, ipAddress8b[0], ipAddress8b[1], ipAddress8b[2], ipAddress8b[3], stackMacAddress[0], stackMacAddress[1], stackMacAddress[2], stackMacAddress[3], stackMacAddress[4], stackMacAddress[5], days, hours, minutes, seconds, (int) xPortGetFreeHeapSize(), guestCounter );
-   snprintf((char*)pageBuffer, stringLength+1, webpage_panelcontrollerMonitor, ipAddress8b[0], ipAddress8b[1], ipAddress8b[2], ipAddress8b[3], stackMacAddress[0], stackMacAddress[1], stackMacAddress[2], stackMacAddress[3], stackMacAddress[4], stackMacAddress[5], days, hours, minutes, seconds, (int) xPortGetFreeHeapSize(), guestCounter );
+   stringLength = snprintf(0, 0, webpage_panelcontrollerMonitor, ipAddress8b[0], ipAddress8b[1], ipAddress8b[2], ipAddress8b[3], stackMacAddress[0], stackMacAddress[1], stackMacAddress[2], stackMacAddress[3], stackMacAddress[4], stackMacAddress[5], days, hours, minutes, seconds, (int) xPortGetFreeHeapSize(), led_getDuty(), guestCounter );
+   snprintf((char*)pageBuffer, stringLength+1, webpage_panelcontrollerMonitor, ipAddress8b[0], ipAddress8b[1], ipAddress8b[2], ipAddress8b[3], stackMacAddress[0], stackMacAddress[1], stackMacAddress[2], stackMacAddress[3], stackMacAddress[4], stackMacAddress[5], days, hours, minutes, seconds, (int) xPortGetFreeHeapSize(), led_getDuty(), guestCounter );
    
    // send fragment of the webpage//////////////////////////////////////////////
    if( stringLength < pageBufferSize )

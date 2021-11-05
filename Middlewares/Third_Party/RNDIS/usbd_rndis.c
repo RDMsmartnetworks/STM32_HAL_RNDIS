@@ -589,7 +589,7 @@ bool USBD_RNDIS_send( const void *data, uint16_t size )
    {
       return false;
    }
-   if( size > ETH_MAX_PACKET_SIZE )
+   if( size > ETH_MAX_PACKET_SIZE || size == 0 )
    {
       return false;
    }

@@ -157,7 +157,7 @@ stack will revert to using the static IP address even when ipconfigUSE_DHCP is
 set to 1 if a valid configuration cannot be obtained from a DHCP server for any
 reason.  The static configuration used is that passed into the stack by the
 FreeRTOS_IPInit() function call. */
-#define ipconfigUSE_DHCP 1
+#define ipconfigUSE_DHCP 0
 #define ipconfigDHCP_REGISTER_HOSTNAME 1
 #define ipconfigDNS_USE_CALLBACKS 1
 
@@ -212,7 +212,7 @@ not set to 1 then only FreeRTOS_indet_addr_quick() is available. */
 are available to the IP stack.  The total number of network buffers is limited
 to ensure the total amount of RAM that can be consumed by the IP stack is capped
 to a pre-determinable value. */
-#define ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS		24
+#define ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS		12
 
 /* A FreeRTOS queue is used to send events from application tasks to the IP
 stack.  ipconfigEVENT_QUEUE_LENGTH sets the maximum number of events that can
@@ -304,7 +304,7 @@ maximum size.  Define the size of Rx buffer for TCP sockets. */
 #define ipconfigTCP_RX_BUFFER_LENGTH			( 2 * ipconfigTCP_MSS ) // nk: set from 1000: https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCP_IP_Configuration_Examples.html
 
 /* Define the size of Tx buffer for TCP sockets. */
-#define ipconfigTCP_TX_BUFFER_LENGTH			( 4 * ipconfigTCP_MSS )  // nk: set from 1000: https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCP_IP_Configuration_Examples.html
+#define ipconfigTCP_TX_BUFFER_LENGTH			( 2 * ipconfigTCP_MSS )  // nk: set from 1000: https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCP_IP_Configuration_Examples.html
 
 /* When using call-back handlers, the driver may check if the handler points to
 real program memory (RAM or flash) or just has a random non-zero value. */

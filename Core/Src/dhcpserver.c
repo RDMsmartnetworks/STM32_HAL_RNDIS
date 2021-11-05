@@ -59,8 +59,7 @@
 #include "FreeRTOS_DHCP.h"
 
 // Private defines ************************************************************
-#define TXBUFFERSIZE       ( 300u )
-#define URIBUFFER          ( 300u )
+#define TXRXBUFFERSIZE     ( 650u )
 
 #define DHCP_DISCOVER       ( 1u )
 #define DHCP_OFFER          ( 2u )
@@ -72,7 +71,7 @@
 #define DHCP_INFORM         ( 8u )
 
 // Private types     **********************************************************
-typedef __packed struct dhcpserver_message_s
+typedef struct  DHCP_MSG_t // __packed
 {
     uint8_t  op;           // packet opcode type 
     uint8_t  htype;        // hardware addr type 
@@ -89,20 +88,13 @@ typedef __packed struct dhcpserver_message_s
     uint8_t  legacy[192];  // old fields
     uint8_t  magic[4];     // magic number
     uint8_t  options[275]; // options area
-} dhcpserver_message_t;
+} DHCP_MSG_t;
 
 // Private variables **********************************************************
-osThreadId_t dhcpserverListenTaskToNotify;
-const osThreadAttr_t dhcpserverListenTask_attributes = {
-  .name = "dhcpserverListenTask",
-  .stack_size = configMINIMAL_STACK_SIZE * 4,
-  .priority = (osPriority_t) osPriorityLow,
-};
-
 osThreadId_t dhcpserverHandleTaskToNotify;
 const osThreadAttr_t dhcpserverHandleTask_attributes = {
   .name = "dhcpserverHandleTask",
-  .stack_size = 8 * configMINIMAL_STACK_SIZE * 4,
+  .stack_size = 4 * configMINIMAL_STACK_SIZE * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
 
@@ -143,7 +135,7 @@ enum dhcp_options
 };
 
 static dhcpconf_t             *dhcpconf;
-static dhcpserver_message_t   *dhcpMsg;
+static DHCP_MSG_t   *dhcpMsg;
 static TickType_t             xReceiveTimeOut   = pdMS_TO_TICKS( 4000 );
 static TickType_t             xSendTimeOut      = pdMS_TO_TICKS( 4000 );
 static char                   magic_cookie[]    = {0x63,0x82,0x53,0x63};
@@ -151,11 +143,11 @@ static char                   magic_cookie[]    = {0x63,0x82,0x53,0x63};
 // Global variables ***********************************************************
 
 // Private function prototypes ************************************************
-static void             dhcpserver_listen          ( void *pvParameters );
 static void             dhcpserver_handle          ( void *pvParameters );
 static leasetableObj_t  *dhcpserver_lookupIp       ( uint32_t ip );
 static leasetableObj_t  *dhcpserver_lookupMac      ( uint8_t *mac );
 static leasetableObj_t  *dhcpserver_lookupRegister ( uint8_t *mac, uint8_t *ip );
+static void             dhcpserver_lookupSetMac    ( leasetableObj_t* tableObj, uint8_t* mac );
 static leasetableObj_t  *dhcpserver_lookupFree     ( void );
 static uint8_t          dhcpserver_lookupFreeObj   ( leasetableObj_t* tableObj );
 static void             dhcpserver_lookupDelete    ( leasetableObj_t* tableObj );
@@ -175,8 +167,8 @@ void dhcpserver_init( dhcpconf_t *dhcpconf_param )
    // register leasing pool
    dhcpconf = dhcpconf_param;
    
-   // initialise dhcp listen task
-   dhcpserverListenTaskToNotify = osThreadNew( dhcpserver_listen, NULL, &dhcpserverListenTask_attributes );
+   // initialise dhcp handle task
+   dhcpserverHandleTaskToNotify = osThreadNew( dhcpserver_handle, NULL, &dhcpserverHandleTask_attributes );
 }
 
 //------------------------------------------------------------------------------
@@ -190,50 +182,6 @@ void dhcpserver_deinit( void )
 }
 
 // ----------------------------------------------------------------------------
-/// \brief     Creates a task which listen on http port 80 for requests
-///
-/// \param     [in]  void *pvParameters
-///
-/// \return    none
-static void dhcpserver_listen( void *pvParameters )
-{
-   struct freertos_sockaddr xClient, xBindAddress;
-   Socket_t xListeningSocket, xConnectedSocket;
-   socklen_t xSize = sizeof( xClient );
-   const TickType_t xReceiveTimeOut = portMAX_DELAY;
-   const BaseType_t xBacklog = 3;
-   
-   // Attempt to open the socket.
-   xListeningSocket = FreeRTOS_socket( FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP );
-
-   // Check the socket was created.
-   configASSERT( xListeningSocket != FREERTOS_INVALID_SOCKET );
-
-   // Set a time out so accept() will just wait for a connection.
-   FreeRTOS_setsockopt( xListeningSocket, 0, FREERTOS_SO_RCVTIMEO, &xReceiveTimeOut, sizeof( xReceiveTimeOut ) );
-
-   // Set the listening sblink to 67 as general for dhcp server.
-   xBindAddress.sin_port = ( uint16_t ) 67;
-   xBindAddress.sin_port = FreeRTOS_htons( xBindAddress.sin_port );
-
-   // Bind the socket to the sblink that the client RTOS task will send to.
-   FreeRTOS_bind( xListeningSocket, &xBindAddress, sizeof( xBindAddress ) );
-
-   // Set the socket into a listening state so it can accept connections.
-   FreeRTOS_listen( xListeningSocket, xBacklog );
-
-   for( ;; )
-   {
-      // Wait for incoming connections.
-      xConnectedSocket = FreeRTOS_accept( xListeningSocket, &xClient, &xSize );
-      configASSERT( xConnectedSocket != FREERTOS_INVALID_SOCKET );
-
-      // Spawn a RTOS task to handle the connection.
-      dhcpserverHandleTaskToNotify = osThreadNew( dhcpserver_handle, NULL, &dhcpserverHandleTask_attributes );
-   }
-}
-
-// ----------------------------------------------------------------------------
 /// \brief     Creates a task when if tcp frame arrives from a session and
 ///            handles its content. 
 ///            Handling GET or POST requests and parsing the uri's.
@@ -243,12 +191,12 @@ static void dhcpserver_listen( void *pvParameters )
 /// \return    none
 static void dhcpserver_handle( void *pvParameters )
 {
-   Socket_t          xConnectedSocket;
-   uint8_t           uri[URIBUFFER];
-   TickType_t        xTimeOnShutdown;
    uint8_t           *pucRxBuffer;
    uint8_t           *pucTxBuffer;
    BaseType_t        lengthOfbytes;
+   static uint32_t   errorDisco;
+   static uint32_t   errorReq;
+   BaseType_t        bytesSend;
    uint8_t*          ptr;
    static uint16_t   etimeout;  
    static uint16_t   enomem;  
@@ -256,63 +204,45 @@ static void dhcpserver_handle( void *pvParameters )
    static uint16_t   eintr;   
    static uint16_t   einval; 
    static uint16_t   eelse;
-   static uint16_t   uriTooLongError;
-   static uint8_t    serverInstanceMallocError;
-   FlagStatus        jumpToAppFlag = RESET;
+   long              lBytes;
+   struct            freertos_sockaddr xClient, xBindAddress;
+   uint32_t          xClientLength = sizeof( xClient );
+   Socket_t          xListeningSocket;
+   struct freertos_sockaddr xDestinationAddress;
    
-   // get the socket
-   xConnectedSocket = ( Socket_t ) pvParameters;
-
-	// allocate heap for the page
-   pucTxBuffer = ( uint8_t * ) pvPortMalloc( TXBUFFERSIZE );
+   // allocate heap for the transmit and receive message
+   pucTxBuffer = ( uint8_t * ) pvPortMalloc( TXRXBUFFERSIZE );
+	pucRxBuffer = ( uint8_t * ) pvPortMalloc( TXRXBUFFERSIZE );
    
-   if( pucTxBuffer == NULL )
+   if( pucTxBuffer == NULL || pucRxBuffer == NULL )
    {
-      FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );    
-      xTimeOnShutdown = xTaskGetTickCount();
-      do
-      {
-         if( FreeRTOS_recv( xConnectedSocket, uri, URIBUFFER, 0 ) < 0 )
-         {
-            vTaskDelay( pdMS_TO_TICKS( 250 ) );
-            break; 
-         }
-      } while( ( xTaskGetTickCount() - xTimeOnShutdown ) < pdMS_TO_TICKS( 5000 ) );
-      serverInstanceMallocError++;
-      FreeRTOS_closesocket( xConnectedSocket );
       vTaskDelete( NULL );
-      return;
    }
    
-   // allocate heap for frame reception
-	pucRxBuffer = ( uint8_t * ) pvPortMalloc( ipconfigTCP_MSS );
-   
-   if( pucRxBuffer == NULL )
-   {
-      FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );    
-      xTimeOnShutdown = xTaskGetTickCount();
-      do
-      {
-         if( FreeRTOS_recv( xConnectedSocket, uri, URIBUFFER, 0 ) < 0 )
-         {
-            vTaskDelay( pdMS_TO_TICKS( 250 ) );
-            break; 
-         }
-      } while( ( xTaskGetTickCount() - xTimeOnShutdown ) < pdMS_TO_TICKS( 5000 ) );
-      serverInstanceMallocError++;
-      FreeRTOS_closesocket( xConnectedSocket );
-      vTaskDelete( NULL );
-      return;
-   }
+   /* Attempt to open the socket. */
+   xListeningSocket = FreeRTOS_socket( FREERTOS_AF_INET,
+                                       FREERTOS_SOCK_DGRAM,/*FREERTOS_SOCK_DGRAM for UDP.*/
+                                       FREERTOS_IPPROTO_UDP );
 
-   FreeRTOS_setsockopt( xConnectedSocket, 0, FREERTOS_SO_RCVTIMEO, &xReceiveTimeOut, sizeof( xReceiveTimeOut ) );
-	FreeRTOS_setsockopt( xConnectedSocket, 0, FREERTOS_SO_SNDTIMEO, &xSendTimeOut, sizeof( xSendTimeOut ) );
+   /* Check the socket was created. */
+   configASSERT( xListeningSocket != FREERTOS_INVALID_SOCKET );
+
+   /* Bind to port 67. */
+   xBindAddress.sin_port = FreeRTOS_htons( 67 );
+   FreeRTOS_bind( xListeningSocket, &xBindAddress, sizeof( xBindAddress ) );
 
    for( ;; )
    {
-      // Receive data on the socket.
-      lengthOfbytes = FreeRTOS_recv( xConnectedSocket, pucRxBuffer, ipconfigTCP_MSS, 0 );
-         
+       /* Receive data from the socket.  ulFlags is zero, so the standard
+       interface is used.  By default the block time is portMAX_DELAY, but it
+       can be changed using FreeRTOS_setsockopt(). */
+       lengthOfbytes = FreeRTOS_recvfrom( xListeningSocket,
+                                   pucRxBuffer,
+                                   TXRXBUFFERSIZE,
+                                   0,
+                                   &xClient,
+                                   &xClientLength );
+
       // check lengthOfbytes ------------- lengthOfbytes > 0                           --> data received
       //                                   lengthOfbytes = 0                           --> timeout
       //                                   lengthOfbytes = pdFREERTOS_ERRNO_ENOMEM     --> not enough memory on socket
@@ -325,7 +255,7 @@ static void dhcpserver_handle( void *pvParameters )
          leasetableObj_t *leaseObj;
          
          // process dhcp frames
-         dhcpMsg = (dhcpserver_message_t*)pucRxBuffer;
+         dhcpMsg = (DHCP_MSG_t*)pucRxBuffer;
          
          switch ( dhcpMsg->options[2] )
          {
@@ -355,17 +285,18 @@ static void dhcpserver_handle( void *pvParameters )
                // zero out options
                memset( dhcpMsg->options, 0x00, sizeof(dhcpMsg->options) );
       
-               dhcpserver_fillOptions( dhcpMsg->options,
-                  DHCP_OFFER,
-                  dhcpconf->domain,
-                  *(uint32_t*)dhcpconf->dns,
-                  leaseObj->leasetime, 
-                  *(uint32_t*)dhcpconf->dhcpip,
-                  *(uint32_t*)dhcpconf->dhcpip, 
-                  *(uint32_t*)dhcpconf->sub );
+               dhcpserver_fillOptions( dhcpMsg->options, DHCP_OFFER, dhcpconf->domain,
+                  *(uint32_t*)dhcpconf->dns, leaseObj->leasetime, *(uint32_t*)dhcpconf->dhcpip,
+                  *(uint32_t*)dhcpconf->dhcpip, *(uint32_t*)dhcpconf->sub );
                
-               memcpy( pucTxBuffer, dhcpMsg, sizeof(dhcpserver_message_t));
-               FreeRTOS_send( xConnectedSocket, pucTxBuffer, sizeof(dhcpserver_message_t), 0 );
+               memcpy( pucTxBuffer, dhcpMsg, sizeof(DHCP_MSG_t));
+               xDestinationAddress.sin_addr = FreeRTOS_inet_addr_quick( 255, 255, 255, 255 );
+               xDestinationAddress.sin_port = FreeRTOS_htons( 68 );
+               bytesSend = FreeRTOS_sendto( xListeningSocket, pucTxBuffer, sizeof(DHCP_MSG_t), 0, &xDestinationAddress, sizeof( xDestinationAddress ) );
+               if( bytesSend != sizeof(DHCP_MSG_t) )
+               {
+                  errorDisco++;
+               }
                break;
       
             case DHCP_REQUEST:
@@ -402,6 +333,9 @@ static void dhcpserver_handle( void *pvParameters )
                {
                   break;
                }
+               
+               // write mac address to the designated ip address
+               dhcpserver_lookupSetMac( leaseObj, dhcpMsg->chaddr );
       
                // prepare dhcp response message
                memcpy( dhcpMsg->yiaddr, ptr, 4u );
@@ -414,66 +348,54 @@ static void dhcpserver_handle( void *pvParameters )
                memset( dhcpMsg->options, 0x00, sizeof(dhcpMsg->options) );
   
                // fill options
-               dhcpserver_fillOptions( dhcpMsg->options,
-                  DHCP_ACK,
-                  dhcpconf->domain,
-                  *(uint32_t*)dhcpconf->dns,
-                  leaseObj->leasetime, 
-                  *(uint32_t*)dhcpconf->dhcpip,
-                  *(uint32_t*)dhcpconf->dhcpip, 
-                  *(uint32_t*)dhcpconf->sub );
+               dhcpserver_fillOptions( dhcpMsg->options, DHCP_ACK, dhcpconf->domain,
+                  *(uint32_t*)dhcpconf->dns, leaseObj->leasetime, *(uint32_t*)dhcpconf->dhcpip,
+                  *(uint32_t*)dhcpconf->dhcpip, *(uint32_t*)dhcpconf->sub );
                
                // send acknowledge
-               memcpy( pucTxBuffer, dhcpMsg, sizeof(dhcpserver_message_t));
-               FreeRTOS_send( xConnectedSocket, pucTxBuffer, sizeof(dhcpserver_message_t), 0 );
+               memcpy( pucTxBuffer, dhcpMsg, sizeof(DHCP_MSG_t));
+               xDestinationAddress.sin_addr = FreeRTOS_inet_addr_quick( 255, 255, 255, 255 );
+               xDestinationAddress.sin_port = FreeRTOS_htons( 68 );
+               bytesSend = FreeRTOS_sendto( xListeningSocket, pucTxBuffer, sizeof(DHCP_MSG_t), 0, &xDestinationAddress, sizeof( xDestinationAddress ) );
+               if( bytesSend != sizeof(DHCP_MSG_t) )
+               {
+                  errorReq++;
+               }
                break;
       
             default:
                   break;
          }
-         continue;
       }
       else if( lengthOfbytes == 0 )
       {
          // No data was received, but FreeRTOS_recv() did not return an error. Timeout?
          etimeout++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                        
-         break;    
       }
       else if( lengthOfbytes == pdFREERTOS_ERRNO_ENOMEM )                                                                                        
       {                                                                                                                    
          // Error (maybe the connected socket already shut down the socket?). Attempt graceful shutdown.                   
          enomem++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                        
-         break;
       } 
       else if( lengthOfbytes == pdFREERTOS_ERRNO_ENOTCONN )                                                                   
       {                                                                                                                       
          // Error (maybe the connected socket already shut down the socket?). Attempt graceful shutdown.                      
          enotconn++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                           
-         break;
       } 
       else if( lengthOfbytes == pdFREERTOS_ERRNO_EINTR )                                                                      
       {                                                                                                                       
          // Error (maybe the connected socket already shut down the socket?). Attempt graceful shutdown.                      
          eintr++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                           
-         break;
       } 
       else if( lengthOfbytes == pdFREERTOS_ERRNO_EINVAL )                                                                      
       {                                                                                                                       
          // Error (maybe the connected socket already shut down the socket?). Attempt graceful shutdown.                      
          einval++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                           
-         break;
       } 
       else
       {                                                                                                                       
          // Error (maybe the connected socket already shut down the socket?). Attempt graceful shutdown.                      
          eelse++;
-         //FreeRTOS_shutdown( xConnectedSocket, FREERTOS_SHUT_RDWR );                                                           
-         break;
       } 
    }
 }
@@ -590,6 +512,22 @@ static void dhcpserver_lookupDelete( leasetableObj_t* tableObj )
 }
 
 // ----------------------------------------------------------------------------
+/// \brief     Set mac address in the dhcp lease table.
+///
+/// \param     [in]  leasetableObj_t* tableObj
+///
+/// \return    void
+static void dhcpserver_lookupSetMac( leasetableObj_t* tableObj, uint8_t* mac )
+{
+   if( dhcpconf == NULL )
+   {
+      return;
+   }
+   
+   memcpy( tableObj->mac, mac, 6u );
+}
+
+// ----------------------------------------------------------------------------
 /// \brief     Delete mac address in the dhcp lease table.
 ///
 /// \param     [in]  leasetableObj_t* tableObj
@@ -605,9 +543,9 @@ static uint8_t dhcpserver_lookupFreeObj( leasetableObj_t* tableObj )
    
    if( memcmp( tableObj->mac, empty, 6u ) == 0 )
    {
-      return 2;
+      return 1;
    }
-   return 1;
+   return 2;
 }
 
 // ----------------------------------------------------------------------------

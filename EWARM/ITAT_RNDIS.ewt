@@ -1442,13 +1442,13 @@
                         <name>$PROJ_DIR$\..\Core\Inc\dhcpserver.h</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\Core\Inc\dnsserver.h</name>
-                    </file>
-                    <file>
                         <name>$PROJ_DIR$\..\Core\Inc\FreeRTOSConfig.h</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\Core\Inc\FreeRTOSIPConfig.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\Core\Inc\led.h</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\Core\Inc\main.h</name>
@@ -1476,10 +1476,10 @@
                     <name>$PROJ_DIR$\..\Core\Src\dhcpserver.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\Core\Src\dnsserver.c</name>
+                    <name>$PROJ_DIR$\..\Core\Src\freertos.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\Core\Src\freertos.c</name>
+                    <name>$PROJ_DIR$\..\Core\Src\led.c</name>
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\main.c</name>
