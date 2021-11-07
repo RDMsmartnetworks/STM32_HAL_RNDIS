@@ -11,9 +11,9 @@
 ///
 /// \author    Nico Korn
 ///
-/// \version   0.2.0.0
+/// \version   0.3.0.0
 ///
-/// \date      29102021
+/// \date      07112021
 /// 
 /// \copyright Copyright 2021 Reichle & De-Massari AG
 ///            

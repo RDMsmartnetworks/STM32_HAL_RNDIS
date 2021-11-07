@@ -7,9 +7,9 @@
 ///
 /// \author    Nico Korn
 ///
-/// \version   1.0.0.0
+/// \version   0.3.0.0
 ///
-/// \date      02072021
+/// \date      07112021
 /// 
 /// \copyright Copyright (C) 2021 by "Nico Korn". nico13@hispeed.ch
 ///

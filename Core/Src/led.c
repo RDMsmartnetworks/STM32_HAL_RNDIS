@@ -8,9 +8,9 @@
 ///
 /// \author    Nico Korn
 ///
-/// \version   0.2.0.0
+/// \version   0.3.0.0
 ///
-/// \date      29102021
+/// \date      07112021
 /// 
 /// \copyright Copyright (C) 2021 by "Nico Korn". nico13@hispeed.ch
 ///
@@ -60,7 +60,6 @@
 TIM_HandleTypeDef          htim2;
 static TIM_OC_InitTypeDef  TIM_OC1Struct;
 static uint8_t             duty = 20;
-static osThreadId_t        led_taskHandle;
 const osThreadAttr_t ledTask_attributes = {
   .name = "LED-task",
   .stack_size = 2 * configMINIMAL_STACK_SIZE * 4,
@@ -96,7 +95,7 @@ void led_init( void ){
    pwm_init();
    
    // start the status monitoring task
-   led_taskHandle = osThreadNew( ledTask, NULL, &ledTask_attributes );
+   osThreadNew( ledTask, NULL, &ledTask_attributes );
 }
 
 // ----------------------------------------------------------------------------

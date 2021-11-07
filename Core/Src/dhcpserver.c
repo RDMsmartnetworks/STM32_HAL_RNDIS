@@ -7,9 +7,9 @@
 ///
 /// \author    Nico Korn
 ///
-/// \version   0.2.0.0
+/// \version   0.3.0.0
 ///
-/// \date      02112021
+/// \date      07112021
 /// 
 /// \copyright Copyright (C) 2021 by "Nico Korn". nico13@hispeed.ch
 ///
@@ -196,7 +196,6 @@ static void dhcpserver_handle( void *pvParameters )
    BaseType_t        lengthOfbytes;
    static uint32_t   errorDisco;
    static uint32_t   errorReq;
-   BaseType_t        bytesSend;
    uint8_t*          ptr;
    static uint16_t   etimeout;  
    static uint16_t   enomem;  
@@ -292,11 +291,7 @@ static void dhcpserver_handle( void *pvParameters )
                memcpy( pucTxBuffer, dhcpMsg, sizeof(DHCP_MSG_t));
                xDestinationAddress.sin_addr = FreeRTOS_inet_addr_quick( 255, 255, 255, 255 );
                xDestinationAddress.sin_port = FreeRTOS_htons( 68 );
-               bytesSend = FreeRTOS_sendto( xListeningSocket, pucTxBuffer, sizeof(DHCP_MSG_t), 0, &xDestinationAddress, sizeof( xDestinationAddress ) );
-               if( bytesSend != sizeof(DHCP_MSG_t) )
-               {
-                  errorDisco++;
-               }
+               FreeRTOS_sendto( xListeningSocket, pucTxBuffer, sizeof(DHCP_MSG_t), 0, &xDestinationAddress, sizeof( xDestinationAddress ) );
                break;
       
             case DHCP_REQUEST:
@@ -356,11 +351,7 @@ static void dhcpserver_handle( void *pvParameters )
                memcpy( pucTxBuffer, dhcpMsg, sizeof(DHCP_MSG_t));
                xDestinationAddress.sin_addr = FreeRTOS_inet_addr_quick( 255, 255, 255, 255 );
                xDestinationAddress.sin_port = FreeRTOS_htons( 68 );
-               bytesSend = FreeRTOS_sendto( xListeningSocket, pucTxBuffer, sizeof(DHCP_MSG_t), 0, &xDestinationAddress, sizeof( xDestinationAddress ) );
-               if( bytesSend != sizeof(DHCP_MSG_t) )
-               {
-                  errorReq++;
-               }
+               FreeRTOS_sendto( xListeningSocket, pucTxBuffer, sizeof(DHCP_MSG_t), 0, &xDestinationAddress, sizeof( xDestinationAddress ) );
                break;
       
             default:
