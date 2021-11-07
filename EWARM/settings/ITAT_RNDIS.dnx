@@ -20,7 +20,7 @@
         <LeaveTargetRunning>_ 0</LeaveTargetRunning>
     </StLinkDriver>
     <DebugChecksum>
-        <Checksum>2370446594</Checksum>
+        <Checksum>927914189</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -68,6 +68,9 @@
         <Enabled>0</Enabled>
         <ShowSource>1</ShowSource>
     </Trace1>
+    <InterruptStripe>
+        <Sort>1</Sort>
+    </InterruptStripe>
     <struct_types>
         <Fmt0>DNS_QUERY_t-dnsclass	4	0</Fmt0>
         <Fmt1>DNS_QUERY_t-type	4	0</Fmt1>

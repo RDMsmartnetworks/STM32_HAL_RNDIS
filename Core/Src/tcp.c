@@ -94,7 +94,7 @@ static dhcpconf_t dhcpconf =
 
 osThreadId_t tcp_macTaskToNotify;
 const osThreadAttr_t macReceiveTask_attributes = {
-  .name = "macReceiveTask",
+  .name = "MAC-task",
   .stack_size = configMINIMAL_STACK_SIZE * 4,
   .priority = (osPriority_t) osPriorityHigh7,
 };

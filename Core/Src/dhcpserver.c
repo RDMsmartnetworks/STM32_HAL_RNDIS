@@ -93,7 +93,7 @@ typedef struct  DHCP_MSG_t // __packed
 // Private variables **********************************************************
 osThreadId_t dhcpserverHandleTaskToNotify;
 const osThreadAttr_t dhcpserverHandleTask_attributes = {
-  .name = "dhcpserverHandleTask",
+  .name = "DHCP-task",
   .stack_size = 4 * configMINIMAL_STACK_SIZE * 4,
   .priority = (osPriority_t) osPriorityLow,
 };

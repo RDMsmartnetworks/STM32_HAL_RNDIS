@@ -111,7 +111,7 @@ typedef __packed struct DNS_QUERY_s
 // Private variables **********************************************************
 osThreadId_t dnsserverHandleTaskToNotify;
 const osThreadAttr_t dnsserverHandleTask_attributes = {
-  .name = "dnsserverHandleTask",
+  .name = "DNS-task",
   .stack_size = 4 * configMINIMAL_STACK_SIZE * 4,
   .priority = (osPriority_t) osPriorityLow,
 };

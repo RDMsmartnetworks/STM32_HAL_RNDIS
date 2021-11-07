@@ -71,14 +71,14 @@
 // Private variables **********************************************************
 osThreadId_t webserverListenTaskToNotify;
 const osThreadAttr_t webserverListenTask_attributes = {
-  .name = "webserverListenTask",
+  .name = "HTTPListen-task",
   .stack_size = configMINIMAL_STACK_SIZE * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
 
 osThreadId_t webserverHandleTaskToNotify;
 const osThreadAttr_t webserverHandleTask_attributes = {
-  .name = "webserverHandleTask",
+  .name = "HTTP-task",
   .stack_size = 4 * configMINIMAL_STACK_SIZE * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
@@ -485,9 +485,13 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
    uint32_t 		   netMask;
    uint32_t 		   dnsAddress;
    uint32_t 		   gatewayAddress;
+   size_t 		      freeheap;
    const uint8_t* 	stackMacAddress;
-   BaseType_t        xBytesSent = 0;
-   static uint32_t   txError;
+   osThreadId_t      tasks[7] = {0};
+   uint32_t          tasksNr = 7;
+   uint8_t           dutyCycle;
+   uint8_t           taskCount;
+   TaskStatus_t      *task;
    
    static const char *webpage_panelcontrollerMonitor = {
       
@@ -502,14 +506,25 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
       "</style>"
       
       "<p><h3>Homepage</h3></p>"
+      "<p>___</p>"
       "<p>IP: %d.%d.%d.%d</p>"
       "<p>MAC: %02x:%02x:%02x:%02x:%02x:%02x</p>"
       "<p>Uptime: %d days, %d hours, %d minutes, %d seconds</p>"
+      "<p>___</p>"
       "<p>Free Heap: %d bytes</p>"
+      "<p>Running Tasks</p>"
+      "<p><style='padding: 20px'>Task 1: %s</style>, Priority: %d</p>"
+      "<p>Task 2: %s, Priority: %d</p>"
+      "<p>Task 3: %s, Priority: %d</p>"
+      "<p>Task 4: %s, Priority: %d</p>"
+      "<p>Task 5: %s, Priority: %d</p>"
+      "<p>Task 6: %s, Priority: %d</p>"
+      "<p>Task 7: %s, Priority: %d</p>"
+      "<p>___</p>"
       //"<p><form action='led_toggle' method='post'><button  style='width:200px'>Toggle Led</button></form></p>"
          
       "<p><div class='slidecontainer'>"
-         "Dim Led<input type='range' min='1' max='40' value=%d class='slider' id='myRange'>"
+         "Led Dimmer<input type='range' min='1' max='40' value=%d class='slider' id='myRange'>"
       "</div></p>" 
          
       "<script>"
@@ -517,7 +532,7 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
       "var slider=document.getElementById('myRange');"
       "var block=0;"
          
-      "function unblock() {block=0;}"
+      "function unblock(){block=0;}"
       
       "slider.oninput=function(){"
          "if(block==0){"
@@ -544,29 +559,62 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
    // send fragment of the webpage//////////////////////////////////////////////
    if( stringLength < pageBufferSize )
    {
-      xBytesSent = FreeRTOS_send( xConnectedSocket, pageBuffer, stringLength, 0 );
-      
-      if( xBytesSent != stringLength )
-      {
-         txError++;
-      }
+      FreeRTOS_send( xConnectedSocket, pageBuffer, stringLength, 0 );
    }
    /////////////////////////////////////////////////////////////////////////////
    
    // panelcontroller monitor
    FreeRTOS_GetAddressConfiguration( &ipAddress, &netMask, &gatewayAddress, &dnsAddress );
-   ipAddress8b    = (uint8_t*)(&ipAddress);
+   ipAddress8b       = (uint8_t*)(&ipAddress);
    //temperature    = monitor_getTemperature();
    //voltage        = monitor_getVoltage();
-   stackMacAddress = FreeRTOS_GetMACAddress();
-   totalSeconds   = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000;
-   days           = (totalSeconds / 86400);       
-   hours          = (totalSeconds / 3600) % 24;   
-   minutes        = (totalSeconds / 60) % 60;     
-   seconds        = totalSeconds % 60;            
+   stackMacAddress   = FreeRTOS_GetMACAddress();
+   totalSeconds      = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000;
+   days              = (totalSeconds / 86400);       
+   hours             = (totalSeconds / 3600) % 24;   
+   minutes           = (totalSeconds / 60) % 60;     
+   seconds           = totalSeconds % 60;  
+   freeheap          = xPortGetFreeHeapSize();
+   taskCount         = uxTaskGetNumberOfTasks();
+   task              = pvPortMalloc(taskCount * sizeof(TaskStatus_t));
+   if (task != NULL)
+   {
+      taskCount = uxTaskGetSystemState(task, taskCount, NULL);
+   }
+   else
+   {
+      return;
+   }
+   dutyCycle = led_getDuty();
    guestCounter++;
-   stringLength = snprintf(0, 0, webpage_panelcontrollerMonitor, ipAddress8b[0], ipAddress8b[1], ipAddress8b[2], ipAddress8b[3], stackMacAddress[0], stackMacAddress[1], stackMacAddress[2], stackMacAddress[3], stackMacAddress[4], stackMacAddress[5], days, hours, minutes, seconds, (int) xPortGetFreeHeapSize(), led_getDuty(), guestCounter );
-   snprintf((char*)pageBuffer, stringLength+1, webpage_panelcontrollerMonitor, ipAddress8b[0], ipAddress8b[1], ipAddress8b[2], ipAddress8b[3], stackMacAddress[0], stackMacAddress[1], stackMacAddress[2], stackMacAddress[3], stackMacAddress[4], stackMacAddress[5], days, hours, minutes, seconds, (int) xPortGetFreeHeapSize(), led_getDuty(), guestCounter );
+   stringLength = snprintf(0, 0, webpage_panelcontrollerMonitor, 
+                           ipAddress8b[0], ipAddress8b[1], ipAddress8b[2], ipAddress8b[3], 
+                           stackMacAddress[0], stackMacAddress[1], stackMacAddress[2], stackMacAddress[3], stackMacAddress[4], stackMacAddress[5], 
+                           days, hours, minutes, seconds, 
+                           freeheap, 
+                           task[0].pcTaskName, task[0].uxCurrentPriority, 
+                           task[1].pcTaskName, task[1].uxCurrentPriority,  
+                           task[2].pcTaskName, task[2].uxCurrentPriority,  
+                           task[3].pcTaskName, task[3].uxCurrentPriority,  
+                           task[4].pcTaskName, task[4].uxCurrentPriority,  
+                           task[5].pcTaskName, task[5].uxCurrentPriority, 
+                           task[6].pcTaskName, task[6].uxCurrentPriority, 
+                           dutyCycle, 
+                           guestCounter );
+   snprintf((char*)pageBuffer, stringLength+1, webpage_panelcontrollerMonitor, 
+                           ipAddress8b[0], ipAddress8b[1], ipAddress8b[2], ipAddress8b[3], 
+                           stackMacAddress[0], stackMacAddress[1], stackMacAddress[2], stackMacAddress[3], stackMacAddress[4], stackMacAddress[5], 
+                           days, hours, minutes, seconds, 
+                           freeheap, 
+                           task[0].pcTaskName, task[0].uxCurrentPriority, 
+                           task[1].pcTaskName, task[1].uxCurrentPriority,  
+                           task[2].pcTaskName, task[2].uxCurrentPriority,  
+                           task[3].pcTaskName, task[3].uxCurrentPriority,  
+                           task[4].pcTaskName, task[4].uxCurrentPriority,  
+                           task[5].pcTaskName, task[5].uxCurrentPriority, 
+                           task[6].pcTaskName, task[6].uxCurrentPriority,         
+                           dutyCycle, 
+                           guestCounter );
    
    // send fragment of the webpage//////////////////////////////////////////////
    if( stringLength < pageBufferSize )
@@ -585,6 +633,7 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
       webserver_lastPacket( xConnectedSocket );
       FreeRTOS_send( xConnectedSocket, pageBuffer, stringLength, 0 );
    }
+   vPortFree(task);
    /////////////////////////////////////////////////////////////////////////////
 }
 

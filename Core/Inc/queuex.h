@@ -54,7 +54,7 @@
 
 // Exported defines ***********************************************************
 #define QUEUEBUFFERLENGTH                 ( 1562u )
-#define QUEUELENGTH                       ( 10u )
+#define QUEUELENGTH                       ( 5u )
 
 // Exported types *************************************************************
 typedef enum
