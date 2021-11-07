@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
     <fileVersion>5</fileVersion>
-    <fileChecksum>3307567814</fileChecksum>
+    <fileChecksum>1766750204</fileChecksum>
     <configuration>
         <name>ITAT_RNDIS</name>
         <outputs>
@@ -1576,6 +1576,14 @@
         </forcedrebuild>
         <forcedrebuild>
             <name>$PROJ_DIR$\..\Core\Src\dhcpserver.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_adc.c</name>
+            <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\..\Core\Src\monitor.c</name>
             <tool>ICCARM</tool>
         </forcedrebuild>
         <forcedrebuild>
