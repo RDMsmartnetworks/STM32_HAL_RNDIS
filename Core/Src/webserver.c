@@ -49,6 +49,7 @@
 #include  <stdlib.h>
 #include "webserver.h"
 #include "led.h"
+#include "monitor.h"
 #include "printf.h"
 
 #include "cmsis_os.h"
@@ -73,14 +74,14 @@ osThreadId_t webserverListenTaskToNotify;
 const osThreadAttr_t webserverListenTask_attributes = {
   .name = "HTTPListen-task",
   .stack_size = configMINIMAL_STACK_SIZE * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 
 osThreadId_t webserverHandleTaskToNotify;
 const osThreadAttr_t webserverHandleTask_attributes = {
   .name = "HTTP-task",
   .stack_size = 4 * configMINIMAL_STACK_SIZE * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 
 static TickType_t xReceiveTimeOut         = pdMS_TO_TICKS( 4000 );
@@ -91,9 +92,9 @@ static uint32_t   guestCounter;
 // the webpage top header with rm logo
 static const char *webpage_top = {
    "HTTP/1.1 200 OK\r\n"
-   "Content-Type: text/html\r\n" //"Content-Type: text/html; charset=utf-8\r\n"
-   "Keep-Alive: timeout=20\r\n" 
-   "Connection: keep-alive\r\n\r\n"
+   "Content-Type: text/html\r\n\r\n" //"Content-Type: text/html; charset=utf-8\r\n"
+   //"Keep-Alive: timeout=20\r\n" 
+   //"Connection: keep-alive\r\n\r\n"
 
    "<html><head>"
       
@@ -113,7 +114,6 @@ static const char *webpage_top = {
    "</head>"
    "<body><div class='main'>"
    // Top header bar ////////////////////////////////////////////////////////
-   //"<p><div style=\"height:55;border:1px solid #000;background-color: #000000;\">"
    "<p><div id='box1' style='height:55;'>"
    "<font size='20' font color='white'><b>RNDIS Webserver Example</b></font>"
    "</div></p>"
@@ -492,6 +492,8 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
    uint8_t           dutyCycle;
    uint8_t           taskCount;
    TaskStatus_t      *task;
+   float             temperature;
+   float             voltage;
    
    static const char *webpage_panelcontrollerMonitor = {
       
@@ -511,15 +513,16 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
       "<p>MAC: %02x:%02x:%02x:%02x:%02x:%02x</p>"
       "<p>Uptime: %d days, %d hours, %d minutes, %d seconds</p>"
       "<p>___</p>"
+      "<p>FreeRTOS Version: %s</p>"
       "<p>Free Heap: %d bytes</p>"
       "<p>Running Tasks</p>"
       "<p><style='padding: 20px'>Task 1: %s</style>, Priority: %d</p>"
-      "<p>Task 2: %s, Priority: %d</p>"
-      "<p>Task 3: %s, Priority: %d</p>"
-      "<p>Task 4: %s, Priority: %d</p>"
-      "<p>Task 5: %s, Priority: %d</p>"
-      "<p>Task 6: %s, Priority: %d</p>"
-      "<p>Task 7: %s, Priority: %d</p>"
+      "<p>- Task 2: %s, Priority: %d</p>"
+      "<p>- Task 3: %s, Priority: %d</p>"
+      "<p>- Task 4: %s, Priority: %d</p>"
+      "<p>- Task 5: %s, Priority: %d</p>"
+      "<p>- Task 6: %s, Priority: %d</p>"
+      "<p>- Task 7: %s, Priority: %d</p>"
       "<p>___</p>"
       //"<p><form action='led_toggle' method='post'><button  style='width:200px'>Toggle Led</button></form></p>"
          
@@ -546,7 +549,9 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
       "}"
       "</script>"
           
-      "<p></p>"
+      "<p>Temperature: %.1f C"
+      "<p>Voltage: %.2f V</p>"
+      "<p>___</p>"
       "<p>Guest counter: %d</p>" 
       "<br />"
    };
@@ -566,8 +571,8 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
    // panelcontroller monitor
    FreeRTOS_GetAddressConfiguration( &ipAddress, &netMask, &gatewayAddress, &dnsAddress );
    ipAddress8b       = (uint8_t*)(&ipAddress);
-   //temperature    = monitor_getTemperature();
-   //voltage        = monitor_getVoltage();
+   temperature       = monitor_getTemperature();
+   voltage           = monitor_getVoltage();
    stackMacAddress   = FreeRTOS_GetMACAddress();
    totalSeconds      = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000;
    days              = (totalSeconds / 86400);       
@@ -591,6 +596,7 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
                            ipAddress8b[0], ipAddress8b[1], ipAddress8b[2], ipAddress8b[3], 
                            stackMacAddress[0], stackMacAddress[1], stackMacAddress[2], stackMacAddress[3], stackMacAddress[4], stackMacAddress[5], 
                            days, hours, minutes, seconds, 
+                           tskKERNEL_VERSION_NUMBER,
                            freeheap, 
                            task[0].pcTaskName, task[0].uxCurrentPriority, 
                            task[1].pcTaskName, task[1].uxCurrentPriority,  
@@ -600,11 +606,14 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
                            task[5].pcTaskName, task[5].uxCurrentPriority, 
                            task[6].pcTaskName, task[6].uxCurrentPriority, 
                            dutyCycle, 
+                           temperature,
+                           voltage,
                            guestCounter );
    snprintf((char*)pageBuffer, stringLength+1, webpage_panelcontrollerMonitor, 
                            ipAddress8b[0], ipAddress8b[1], ipAddress8b[2], ipAddress8b[3], 
                            stackMacAddress[0], stackMacAddress[1], stackMacAddress[2], stackMacAddress[3], stackMacAddress[4], stackMacAddress[5], 
                            days, hours, minutes, seconds, 
+                           tskKERNEL_VERSION_NUMBER,
                            freeheap, 
                            task[0].pcTaskName, task[0].uxCurrentPriority, 
                            task[1].pcTaskName, task[1].uxCurrentPriority,  
@@ -614,6 +623,8 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
                            task[5].pcTaskName, task[5].uxCurrentPriority, 
                            task[6].pcTaskName, task[6].uxCurrentPriority,         
                            dutyCycle, 
+                           temperature,
+                           voltage,
                            guestCounter );
    
    // send fragment of the webpage//////////////////////////////////////////////

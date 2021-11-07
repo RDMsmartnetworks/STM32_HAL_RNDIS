@@ -113,7 +113,7 @@ osThreadId_t dnsserverHandleTaskToNotify;
 const osThreadAttr_t dnsserverHandleTask_attributes = {
   .name = "DNS-task",
   .stack_size = 4 * configMINIMAL_STACK_SIZE * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 
 static void dnsserver_handle( void *pvParameters );

@@ -95,7 +95,7 @@ osThreadId_t dhcpserverHandleTaskToNotify;
 const osThreadAttr_t dhcpserverHandleTask_attributes = {
   .name = "DHCP-task",
   .stack_size = 4 * configMINIMAL_STACK_SIZE * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 
 enum dhcp_options

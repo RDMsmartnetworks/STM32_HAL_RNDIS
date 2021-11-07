@@ -63,6 +63,7 @@ int main( void )
    SystemClock_Config();
    
    // init peripherals
+   monitor_init();
    led_init();
    tcp_init();
    usb_init();

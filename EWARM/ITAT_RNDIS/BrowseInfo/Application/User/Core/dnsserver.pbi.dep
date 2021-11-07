@@ -34,6 +34,9 @@ D:\GitHub\STM32_HAL_RNDIS\EWARM\ITAT_RNDIS\BrowseInfo\Application\User\Core\dnss
   D:\GitHub\STM32_HAL_RNDIS\EWARM/../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_dma.h \
   D:\GitHub\STM32_HAL_RNDIS\EWARM/../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma_ex.h \
   D:\GitHub\STM32_HAL_RNDIS\EWARM/../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_cortex.h \
+  D:\GitHub\STM32_HAL_RNDIS\EWARM/../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_adc.h \
+  D:\GitHub\STM32_HAL_RNDIS\EWARM/../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h \
+  D:\GitHub\STM32_HAL_RNDIS\EWARM/../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc_ex.h \
   D:\GitHub\STM32_HAL_RNDIS\EWARM/../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_crc.h \
   D:\GitHub\STM32_HAL_RNDIS\EWARM/../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_flash.h \
   D:\GitHub\STM32_HAL_RNDIS\EWARM/../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ex.h \
