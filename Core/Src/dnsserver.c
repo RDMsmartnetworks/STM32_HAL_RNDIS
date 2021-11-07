@@ -241,7 +241,7 @@ static void dnsserver_handle( void *pvParameters )
          // parse the name query
          for( uint8_t i=0; i<49; i++ )
          {
-            if( namequery[i] <= 63u && namequery[i] > 0u )
+            if( namequery[i] <= 0x3f && namequery[i] > 0u )
             {
                namequrtyparsed[i] = '.';
             }

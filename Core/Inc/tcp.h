@@ -43,11 +43,11 @@
 #define DHCPPOOLSIZE    ( 4u )
 
 #define RXBUFFEROFFSET (uint16_t)(44u) // +44 because of the rndis usb header siz
-#define HOSTNAME        "rndiswebserver"
-#define HOSTNAMECAP     "RNDISWEBSERVER"
-#define DEVICENAME      "rndiswebserver"
-#define DEVICENAMECAP   "RNDISWEBSERVER"
-#define HOSTNAMEDNS     "rndiswebserver.go"
+#define HOSTNAME        "rndis"
+#define HOSTNAMECAP     "RNDIS"
+#define DEVICENAME      "rndis"
+#define DEVICENAMECAP   "RNDIS"
+#define HOSTNAMEDNS     "rndis.go"
 #define MAC_HWADDR      0xAD, 0xDE, 0x15, 0xEF, 0xBE, 0xDA 
 
 // Exported types *************************************************************

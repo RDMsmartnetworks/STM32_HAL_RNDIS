@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ELF Linker V9.10.1.308/W64 for ARM                  07/Nov/2021  09:50:46
+# IAR ELF Linker V9.10.1.308/W64 for ARM                  07/Nov/2021  10:00:01
 # Copyright 2007-2021 IAR Systems AB.
 #
 #    Output file  =
@@ -120,7 +120,7 @@ initialize by copy { rw };
   .intvec            ro code   0x800'0000     0x198  startup_stm32f411xe.o [1]
                              - 0x800'0198     0x198
 
-"P1":                                      0x1'1cda
+"P1":                                      0x1'1cd2
   .text              ro code   0x800'0198    0x1e70  FreeRTOS_TCP_IP.o [8]
   .text              ro code   0x800'2008    0x1010  tasks.o [7]
   .text              ro code   0x800'3018     0x1c8  BufferAllocation_2.o [8]
@@ -234,48 +234,50 @@ initialize by copy { rw };
   .text              ro code   0x801'1a70      0x1c  cstartup_M.o [14]
   .rodata            const     0x801'1a8c      0x18  dhcpserver.o [2]
   .rodata            const     0x801'1aa4      0x14  dnsserver.o [2]
-  .rodata            const     0x801'1ab8      0x14  dnsserver.o [2]
+  .rodata            const     0x801'1ab8      0x14  webserver.o [2]
   .rodata            const     0x801'1acc      0x14  webserver.o [2]
-  .rodata            const     0x801'1ae0      0x14  webserver.o [2]
-  .text              ro code   0x801'1af4      0x14  system_stm32f4xx.o [5]
-  .rodata            const     0x801'1b08      0x10  system_stm32f4xx.o [5]
-  .rodata            const     0x801'1b18      0x10  tcp.o [2]
-  .rodata            const     0x801'1b28      0x10  usbd_desc.o [3]
-  .rodata            const     0x801'1b38      0x10  usbd_desc.o [3]
-  .rodata            const     0x801'1b48      0x10  usbd_desc.o [3]
-  .rodata            const     0x801'1b58      0x10  webserver.o [2]
-  .text              ro code   0x801'1b68      0x10  startup_stm32f411xe.o [1]
-  .rodata            const     0x801'1b78       0xc  BufferAllocation_2.o [8]
-  .rodata            const     0x801'1b84       0xc  usbd_rndis.o [10]
-  .rodata            const     0x801'1b90       0xc  webserver.o [2]
+  .text              ro code   0x801'1ae0      0x14  system_stm32f4xx.o [5]
+  .rodata            const     0x801'1af4      0x10  system_stm32f4xx.o [5]
+  .rodata            const     0x801'1b04      0x10  tcp.o [2]
+  .rodata            const     0x801'1b14      0x10  usbd_desc.o [3]
+  .rodata            const     0x801'1b24      0x10  usbd_desc.o [3]
+  .rodata            const     0x801'1b34      0x10  usbd_desc.o [3]
+  .rodata            const     0x801'1b44      0x10  webserver.o [2]
+  .text              ro code   0x801'1b54      0x10  startup_stm32f411xe.o [1]
+  .rodata            const     0x801'1b64       0xc  BufferAllocation_2.o [8]
+  .rodata            const     0x801'1b70       0xc  dnsserver.o [2]
+  .rodata            const     0x801'1b7c       0xc  usbd_rndis.o [10]
+  .rodata            const     0x801'1b88       0xc  webserver.o [2]
+  .rodata            const     0x801'1b94       0x8  dhcpserver.o [2]
   .rodata            const     0x801'1b9c       0x8  dhcpserver.o [2]
-  .rodata            const     0x801'1ba4       0x8  dhcpserver.o [2]
+  .rodata            const     0x801'1ba4       0x8  FreeRTOS_IP.o [8]
   .rodata            const     0x801'1bac       0x8  FreeRTOS_IP.o [8]
   .rodata            const     0x801'1bb4       0x8  FreeRTOS_IP.o [8]
   .rodata            const     0x801'1bbc       0x8  FreeRTOS_IP.o [8]
-  .rodata            const     0x801'1bc4       0x8  FreeRTOS_IP.o [8]
-  .rodata            const     0x801'1bcc       0x8  FreeRTOS_Sockets.o [8]
+  .rodata            const     0x801'1bc4       0x8  FreeRTOS_Sockets.o [8]
+  .rodata            const     0x801'1bcc       0x8  printf.o [9]
   .rodata            const     0x801'1bd4       0x8  printf.o [9]
-  .rodata            const     0x801'1bdc       0x8  printf.o [9]
-  .rodata            const     0x801'1be4       0x8  system_stm32f4xx.o [5]
-  .rodata            const     0x801'1bec       0x8  tasks.o [7]
-  .rodata            const     0x801'1bf4       0x8  tcp.o [2]
+  .rodata            const     0x801'1bdc       0x8  system_stm32f4xx.o [5]
+  .rodata            const     0x801'1be4       0x8  tasks.o [7]
+  .rodata            const     0x801'1bec       0x8  tcp.o [2]
+  .rodata            const     0x801'1bf4       0x8  timers.o [7]
   .rodata            const     0x801'1bfc       0x8  timers.o [7]
-  .rodata            const     0x801'1c04       0x8  timers.o [7]
+  .rodata            const     0x801'1c04       0x8  usbd_rndis.o [10]
   .rodata            const     0x801'1c0c       0x8  usbd_rndis.o [10]
   .rodata            const     0x801'1c14       0x8  usbd_rndis.o [10]
-  .rodata            const     0x801'1c1c       0x8  usbd_rndis.o [10]
+  .rodata            const     0x801'1c1c       0x8  webserver.o [2]
   .rodata            const     0x801'1c24       0x8  webserver.o [2]
   .rodata            const     0x801'1c2c       0x8  webserver.o [2]
-  .rodata            const     0x801'1c34       0x8  webserver.o [2]
-  .rodata            const     0x801'1c3c       0x4  BufferAllocation_2.o [8]
-  .rodata            const     0x801'1c40       0x4  heap_4.o [7]
-  .rodata            const     0x801'1c44       0x4  port.o [7]
+  .rodata            const     0x801'1c34       0x4  BufferAllocation_2.o [8]
+  .rodata            const     0x801'1c38       0x4  heap_4.o [7]
+  .rodata            const     0x801'1c3c       0x4  port.o [7]
+  .rodata            const     0x801'1c40       0x4  tcp.o [2]
+  .rodata            const     0x801'1c44       0x4  tcp.o [2]
   .rodata            const     0x801'1c48       0x4  tcp.o [2]
   .rodata            const     0x801'1c4c       0x4  tcp.o [2]
   .rodata            const     0x801'1c50       0x4  tcp.o [2]
-  .rodata            const     0x801'1c54       0x4  tcp.o [2]
-  .rodata            const     0x801'1c58       0x4  tcp.o [2]
+  .text              ro code   0x801'1c54       0x4  startup_stm32f411xe.o [1]
+  .text              ro code   0x801'1c58       0x4  startup_stm32f411xe.o [1]
   .text              ro code   0x801'1c5c       0x4  startup_stm32f411xe.o [1]
   .text              ro code   0x801'1c60       0x4  startup_stm32f411xe.o [1]
   .text              ro code   0x801'1c64       0x4  startup_stm32f411xe.o [1]
@@ -328,12 +330,10 @@ initialize by copy { rw };
   .text              ro code   0x801'1d20       0x4  startup_stm32f411xe.o [1]
   .text              ro code   0x801'1d24       0x4  startup_stm32f411xe.o [1]
   .text              ro code   0x801'1d28       0x4  startup_stm32f411xe.o [1]
-  .text              ro code   0x801'1d2c       0x4  startup_stm32f411xe.o [1]
-  .text              ro code   0x801'1d30       0x4  startup_stm32f411xe.o [1]
-  .rodata            const     0x801'1d34       0x0  zero_init3.o [14]
-  .rodata            const     0x801'1d34       0x0  lz77_init_single.o [14]
-  Initializer bytes  const     0x801'1d34     0x13e  <for P2-1>
-                             - 0x801'1e72  0x1'1cda
+  .rodata            const     0x801'1d2c       0x0  zero_init3.o [14]
+  .rodata            const     0x801'1d2c       0x0  lz77_init_single.o [14]
+  Initializer bytes  const     0x801'1d2c     0x13e  <for P2-1>
+                             - 0x801'1e6a  0x1'1cd2
 
 "P2", part 1 of 3:                            0x273
   P2-1                        0x2000'0000     0x273  <Init block>
@@ -506,7 +506,7 @@ Unused ranges:
 
          From           To      Size
          ----           --      ----
-   0x801'1e72   0x805'ffff  0x4'e18e
+   0x801'1e6a   0x805'ffff  0x4'e196
   0x2000'0273  0x2000'0273       0x1
   0x2001'9cb0  0x2001'ffff    0x6350
 
@@ -523,7 +523,7 @@ Zero (__iar_zero_init3)
 
 Copy/lz77 (__iar_lz77_init_single3)
     1 source range, total size 0x13e (50% of destination):
-           0x801'1d34     0x13e
+           0x801'1d2c     0x13e
     1 destination range, total size 0x273:
           0x2000'0000     0x273
 
@@ -546,7 +546,7 @@ D:\GitHub\STM32_HAL_RNDIS\EWARM\ITAT_RNDIS\Obj\Application\EWARM: [1]
 
 D:\GitHub\STM32_HAL_RNDIS\EWARM\ITAT_RNDIS\Obj\Application\User\Core: [2]
     dhcpserver.o                    1'652       78       36
-    dnsserver.o                       540       76       16
+    dnsserver.o                       540       68       16
     led.o                             360               101
     main.o                            336            31'560
     queuex.o                          956
@@ -556,7 +556,7 @@ D:\GitHub\STM32_HAL_RNDIS\EWARM\ITAT_RNDIS\Obj\Application\User\Core: [2]
     tcp.o                             560      134      141
     webserver.o                     1'948    3'596       63
     -------------------------------------------------------
-    Total:                          6'644    3'884   31'989
+    Total:                          6'644    3'876   31'989
 
 D:\GitHub\STM32_HAL_RNDIS\EWARM\ITAT_RNDIS\Obj\Application\User\USB_DEVICE\App: [3]
     usb_device.o                      312               732
@@ -684,7 +684,7 @@ shb_l.a: [15]
     Gaps                               24        4
     Linker created                              32    1'024
 -----------------------------------------------------------
-    Grand Total:                   68'662    4'668  105'647
+    Grand Total:                   68'662    4'660  105'647
 
 
 *******************************************************************************
@@ -696,8 +696,8 @@ Entry                       Address      Size  Type      Object
 .iar.init_table$$Base    0x801'1a08             --   Gb  - Linker created -
 .iar.init_table$$Limit   0x801'1a28             --   Gb  - Linker created -
 ?main                    0x801'1a29            Code  Gb  cmain.o [14]
-AHBPrescTable            0x801'1b08      0x10  Data  Gb  system_stm32f4xx.o [5]
-APBPrescTable            0x801'1be4       0x8  Data  Gb  system_stm32f4xx.o [5]
+AHBPrescTable            0x801'1af4      0x10  Data  Gb  system_stm32f4xx.o [5]
+APBPrescTable            0x801'1bdc       0x8  Data  Gb  system_stm32f4xx.o [5]
 BusFault_Handler         0x801'1817       0x2  Code  Gb  stm32f4xx_it.o [2]
 CSTACK$$Base            0x2001'98b0             --   Gb  - Linker created -
 CSTACK$$Limit           0x2001'9cb0             --   Gb  - Linker created -
@@ -711,7 +711,7 @@ FreeRTOS_GetMACAddress   0x800'4009       0x4  Code  Gb  FreeRTOS_IP.o [8]
 FreeRTOS_IPInit          0x800'34ff     0x1e0  Code  Gb  FreeRTOS_IP.o [8]
 FreeRTOS_NetworkDown     0x800'34ab      0x26  Code  Gb  FreeRTOS_IP.o [8]
 FreeRTOS_NetworkDown::xNetworkDownEvent
-                         0x801'1bc4       0x8  Data  Lc  FreeRTOS_IP.o [8]
+                         0x801'1bbc       0x8  Data  Lc  FreeRTOS_IP.o [8]
 FreeRTOS_OutputARPRequest
                          0x800'50ad      0x4a  Code  Gb  FreeRTOS_ARP.o [8]
 FreeRTOS_accept          0x800'61f7     0x13a  Code  Gb  FreeRTOS_Sockets.o [8]
@@ -842,7 +842,7 @@ SWAPBYTE                 0x800'e181      0x16  Code  Lc  usbd_ctlreq.o [11]
 SysTick_Handler          0x800'8539      0x16  Code  Gb  cmsis_os2.o [7]
 SystemClock_Config       0x800'76e5      0xb0  Code  Gb  main.o [2]
 SystemCoreClock         0x2000'0024       0x4  Data  Gb  system_stm32f4xx.o [5]
-SystemInit               0x801'1af5       0xe  Code  Gb  system_stm32f4xx.o [5]
+SystemInit               0x801'1ae1       0xe  Code  Gb  system_stm32f4xx.o [5]
 TIM1_UP_TIM10_IRQHandler
                          0x801'181d       0xa  Code  Gb  stm32f4xx_it.o [2]
 TIM2_IRQHandler          0x801'1827       0xa  Code  Gb  stm32f4xx_it.o [2]
@@ -1092,11 +1092,11 @@ dhcpserver_lookupDelete
                          0x800'92dd      0x1e  Code  Lc  dhcpserver.o [2]
 dhcpserver_lookupFree    0x800'9287      0x56  Code  Lc  dhcpserver.o [2]
 dhcpserver_lookupFree::empty
-                         0x801'1b9c       0x8  Data  Lc  dhcpserver.o [2]
+                         0x801'1b94       0x8  Data  Lc  dhcpserver.o [2]
 dhcpserver_lookupFreeObj
                          0x800'931f      0x26  Code  Lc  dhcpserver.o [2]
 dhcpserver_lookupFreeObj::empty
-                         0x801'1ba4       0x8  Data  Lc  dhcpserver.o [2]
+                         0x801'1b9c       0x8  Data  Lc  dhcpserver.o [2]
 dhcpserver_lookupIp      0x800'91d9      0x56  Code  Lc  dhcpserver.o [2]
 dhcpserver_lookupMac     0x800'922f      0x58  Code  Lc  dhcpserver.o [2]
 dhcpserver_lookupSetMac
@@ -1160,8 +1160,8 @@ osKernelInitialize       0x800'855d      0x2a  Code  Gb  cmsis_os2.o [7]
 osKernelStart            0x800'8587      0x34  Code  Gb  cmsis_os2.o [7]
 osThreadNew              0x800'85bb      0xe4  Code  Gb  cmsis_os2.o [7]
 pcInterruptPriorityRegisters
-                         0x801'1c44       0x4  Data  Lc  port.o [7]
-permanent_hwaddr         0x801'1c1c       0x8  Data  Lc  usbd_rndis.o [10]
+                         0x801'1c3c       0x4  Data  Lc  port.o [7]
+permanent_hwaddr         0x801'1c14       0x8  Data  Lc  usbd_rndis.o [10]
 processingIdle          0x2000'0272       0x1  Data  Lc  tcp.o [2]
 prvAddCurrentTaskToDelayedList
                          0x800'2f79      0x66  Code  Lc  tasks.o [7]
@@ -1310,7 +1310,7 @@ rndis_state             0x2001'98ae       0x1  Data  Lc  usbd_rndis.o [10]
 rndis_statistic         0x2001'9780       0x8  Data  Lc  usb_device.o [3]
 snprintf_                0x800'b9d5      0x20  Code  Gb  printf.o [9]
 srand                    0x800'9b29       0xe  Code  Gb  rand.o [12]
-station_hwaddr           0x801'1c14       0x8  Data  Lc  usbd_rndis.o [10]
+station_hwaddr           0x801'1c0c       0x8  Data  Lc  usbd_rndis.o [10]
 strlen                   0x800'ba55            Code  Gb  strlen.o [14]
 strncmp                  0x800'a811      0x28  Code  Gb  strncmp.o [12]
 strtol                   0x800'a91d       0x4  Code  Gb  iar_Stolx.o [12]
@@ -1330,13 +1330,13 @@ tcp_rngInit              0x800'5363       0xc  Code  Lc  tcp.o [2]
 tolower                  0x800'eb21      0x14  Code  Gb  tolower.o [12]
 tx                      0x2000'00e0       0xc  Data  Lc  usbd_rndis.o [10]
 ucDNSServerAddressFLASH
-                         0x801'1c58       0x4  Data  Gb  tcp.o [2]
-ucGatewayAddressFLASH    0x801'1c54       0x4  Data  Gb  tcp.o [2]
+                         0x801'1c50       0x4  Data  Gb  tcp.o [2]
+ucGatewayAddressFLASH    0x801'1c4c       0x4  Data  Gb  tcp.o [2]
 ucHeap                  0x2000'0274  0x1'0000  Data  Lc  heap_4.o [7]
-ucIPAddressFLASH         0x801'1c4c       0x4  Data  Gb  tcp.o [2]
-ucMACAddressFLASH        0x801'1bf4       0x8  Data  Gb  tcp.o [2]
+ucIPAddressFLASH         0x801'1c44       0x4  Data  Gb  tcp.o [2]
+ucMACAddressFLASH        0x801'1bec       0x8  Data  Gb  tcp.o [2]
 ucMaxSysCallPriority    0x2001'98ac       0x1  Data  Lc  port.o [7]
-ucNetMaskFLASH           0x801'1c50       0x4  Data  Gb  tcp.o [2]
+ucNetMaskFLASH           0x801'1c48       0x4  Data  Gb  tcp.o [2]
 ulApplicationGetNextSequenceNumber
                          0x800'524d      0x10  Code  Gb  tcp.o [2]
 ulChar2u32               0x800'024f      0x18  Code  Lc  FreeRTOS_TCP_IP.o [8]
@@ -1577,8 +1577,8 @@ xApplicationGetRandomNumber
 xBlockAllocatedBit      0x2001'97ec       0x4  Data  Lc  heap_4.o [7]
 xBoundTCPSocketsList    0x2001'96a0      0x14  Data  Gb  FreeRTOS_Sockets.o [8]
 xBoundUDPSocketsList    0x2001'968c      0x14  Data  Gb  FreeRTOS_Sockets.o [8]
-xBroadcastMACAddress     0x801'1bbc       0x8  Data  Gb  FreeRTOS_IP.o [8]
-xBufferAllocFixedSize    0x801'1c3c       0x4  Data  Gb  BufferAllocation_2.o [8]
+xBroadcastMACAddress     0x801'1bb4       0x8  Data  Gb  FreeRTOS_IP.o [8]
+xBufferAllocFixedSize    0x801'1c34       0x4  Data  Gb  BufferAllocation_2.o [8]
 xDefaultAddressing      0x2001'9650      0x14  Data  Gb  FreeRTOS_IP.o [8]
 xDefaultPartUDPPacketHeader
                         0x2000'0004      0x18  Data  Gb  FreeRTOS_UDP_IP.o [8]
@@ -1590,7 +1590,7 @@ xEventGroupSetBits       0x800'9cf5      0xd6  Code  Gb  event_groups.o [7]
 xEventGroupWaitBits      0x800'9b65     0x14a  Code  Gb  event_groups.o [7]
 xFreeBuffersList        0x2001'9628      0x14  Data  Lc  BufferAllocation_2.o [8]
 xFreeBytesRemaining     0x2001'97dc       0x4  Data  Lc  heap_4.o [7]
-xHeapStructSize          0x801'1c40       0x4  Data  Lc  heap_4.o [7]
+xHeapStructSize          0x801'1c38       0x4  Data  Lc  heap_4.o [7]
 xIPIsNetworkTaskReady    0x800'400d       0x6  Code  Gb  FreeRTOS_IP.o [8]
 xIPTaskHandle           0x2001'97b8       0x4  Data  Lc  FreeRTOS_IP.o [8]
 xIPTaskInitialised      0x2001'97c4       0x4  Data  Lc  FreeRTOS_IP.o [8]
@@ -1719,7 +1719,7 @@ xYieldPending           0x2001'9820       0x4  Data  Lc  tasks.o [7]
 [15] = shb_l.a
 
    68'662 bytes of readonly  code memory
-    4'668 bytes of readonly  data memory
+    4'660 bytes of readonly  data memory
   105'647 bytes of readwrite data memory
 
 Errors: none
