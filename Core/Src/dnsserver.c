@@ -48,6 +48,7 @@
 #include  <string.h>
 #include  <stdlib.h>
 #include "dnsserver.h"
+#include "tcp.h"
 #include "printf.h"
 
 #include "cmsis_os.h"
@@ -102,6 +103,7 @@ typedef __packed struct DNS_QUERY_s
 {
 	char name[MAX_LENGTH];
    uint16_t length;
+   uint16_t labelnr;
 	uint16_t type;
 	uint16_t dnsclass;
 } DNS_QUERY_t;
@@ -173,7 +175,7 @@ static void dnsserver_handle( void *pvParameters )
    struct            freertos_sockaddr xClient, xBindAddress;
    uint32_t          xClientLength = sizeof( xClient );
    Socket_t          xListeningSocket;
-   struct freertos_sockaddr xDestinationAddress;
+   struct            freertos_sockaddr xDestinationAddress;
    DNS_QUERY_t       dnsQuery;
    
    // allocate heap for the transmit and receive message
@@ -217,7 +219,66 @@ static void dnsserver_handle( void *pvParameters )
       //                                   lengthOfbytes = pdFREERTOS_ERRNO_EINVAL     --> socket is not valid
       if( lengthOfbytes > 0 )
       {         
-         dnsserver_parseQuery( pucRxBuffer, MAX_LENGTH, &dnsQuery );
+         if( lengthOfbytes <= sizeof(DNS_HEADER_t) )
+         {
+            continue;
+         }
+
+         // extract the name in the payload
+         DNS_RESPONSE_t    *dnsresponse;
+         DNS_HEADER_t      *dnsheader;
+         uint8_t           namequerylength = 0;
+         uint8_t           namequrtyparsed[50] = {0};
+         uint8_t           *namequery = pucRxBuffer + sizeof(DNS_HEADER_t) + 1;
+         
+         namequerylength = strlen((char const*)namequery);
+         if( namequerylength > 50 )
+         {
+            // name too long
+            continue;
+         }
+         
+         // parse the name query
+         for( uint8_t i=0; i<49; i++ )
+         {
+            if( namequery[i] <= 63u && namequery[i] > 0u )
+            {
+               namequrtyparsed[i] = '.';
+            }
+            else if( namequery[i] == 0 )
+            {
+               namequrtyparsed[i] = 0;
+               break;
+            }
+            else
+            {
+               namequrtyparsed[i] = namequery[i];
+            }
+         }
+         
+         // compare with host name (this device)
+         if( memcmp( namequrtyparsed, HOSTNAMEDNS, strlen(HOSTNAMEDNS) ) != 0 )
+         {
+            // not our name
+            continue;
+         }
+         
+         // prepare response to query
+         memcpy(pucTxBuffer, pucRxBuffer, lengthOfbytes);
+         dnsheader = (DNS_HEADER_t*)pucTxBuffer;
+         dnsheader->flags |= (uint16_t)FLAG_QRESPONSE;
+         dnsheader->n_record[1] = FreeRTOS_htons(1);
+         dnsresponse = (DNS_RESPONSE_t*)(pucTxBuffer+lengthOfbytes);
+         dnsresponse->name = FreeRTOS_htons(0xC00C);
+         dnsresponse->type = FreeRTOS_htons(1);
+         dnsresponse->dnsclass = FreeRTOS_htons(1);
+         dnsresponse->ttl = FreeRTOS_htonl(32);
+         dnsresponse->len = FreeRTOS_htons(4);
+         dnsresponse->addr = FreeRTOS_inet_addr_quick( IP1, IP2, IP3, IP4 );
+
+         //xDestinationAddress.sin_addr = FreeRTOS_inet_addr_quick( 255, 255, 255, 255 );
+         //xDestinationAddress.sin_port = FreeRTOS_htons( 68 );
+         bytesSend = FreeRTOS_sendto( xListeningSocket, pucTxBuffer, lengthOfbytes+sizeof(DNS_RESPONSE_t), 0, &xClient, sizeof( xClient ) );
       }
       else if( lengthOfbytes == 0 )
       {
@@ -288,19 +349,25 @@ static uint8_t dnsserver_parseQuery( uint8_t *data, uint16_t length, DNS_QUERY_t
          return 0;
       }
 
-      // . ? if zero finish here
-      if( *pointer == '.' )
+      // check for next label
+      if( *pointer <= 63 && *pointer > 0 )
       {
          labelLength = *pointer;
          pointer++;
          nameLength++;
          nameLength += labelLength;
+         query->labelnr++;
       }
-      else
+      else if( *pointer == 0 )
       {
          // must be 0 terminator
          nameLength--;
          break;
+      }
+      else
+      {
+         // error
+         return 0;
       }
       
       // copy

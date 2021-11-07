@@ -46,5 +46,4 @@ D:\GitHub\STM32_HAL_RNDIS\EWARM\ITAT_RNDIS\BrowseInfo\Middlewares\FreeRTOS_TCP\F
   D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_ARP.h \
   D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_DHCP.h \
   D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\NetworkInterface.h \
-  D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\NetworkBufferManagement.h \
-  D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\FreeRTOS_DNS.h
+  D:\GitHub\STM32_HAL_RNDIS\EWARM\..\Middlewares\Third_Party\FreeRTOS-Plus-TCP\include\NetworkBufferManagement.h

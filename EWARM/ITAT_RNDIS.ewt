@@ -1442,6 +1442,9 @@
                         <name>$PROJ_DIR$\..\Core\Inc\dhcpserver.h</name>
                     </file>
                     <file>
+                        <name>$PROJ_DIR$\..\Core\Inc\dnsserver.h</name>
+                    </file>
+                    <file>
                         <name>$PROJ_DIR$\..\Core\Inc\FreeRTOSConfig.h</name>
                     </file>
                     <file>
@@ -1474,6 +1477,9 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\dhcpserver.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\Core\Src\dnsserver.c</name>
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\freertos.c</name>

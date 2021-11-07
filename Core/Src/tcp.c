@@ -42,13 +42,6 @@
 #include "NetworkBufferManagement.h"
 
 // Private define *************************************************************
-#define RXBUFFEROFFSET (uint16_t)(44u) // +44 because of the rndis usb header siz
-#define HOSTNAME        "rndis-webserver"
-#define HOSTNAMECAP     "RNDIS-WEBSERVER"
-#define DEVICENAME      "rndis-webserver"
-#define DEVICENAMECAP   "RNDIS-WEBSERVER"
-#define HOSTNAMEDNS     "home.rndis-webserver"
-#define MAC_HWADDR      0xAD, 0xDE, 0x15, 0xEF, 0xBE, 0xDA 
 
 // Private types     **********************************************************
 typedef struct FRAME_s
@@ -94,7 +87,7 @@ static dhcpconf_t dhcpconf =
     {IP1, IP2, IP3, IP4},        // dhcp server address
     {IP1, IP2, IP3, IP4},        // dns server address
     {SUB1, SUB2, SUB3, SUB4},    // subnet address
-    HOSTNAME,                    // hostname
+    "go",                        // domain suffic
     DHCPPOOLSIZE,                // lease table size
     leasetable                   // pointer to lease table
 };
@@ -174,6 +167,9 @@ void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent )
          
          // start dhcp server
          dhcpserver_init(&dhcpconf);
+         
+         // start dns server
+         dnsserver_init();
 
          // set the task created flag
          xTasksAlreadyCreated = pdTRUE;
@@ -261,19 +257,22 @@ const char *pcApplicationHostnameHookCAP( void )
 #if( ipconfigUSE_LLMNR != 0 ) || ( ipconfigUSE_NBNS != 0 )
 BaseType_t xApplicationDNSQueryHook( const char *pcName )
 {
-   static uint32_t llmnrsuccessCounter;
-   static uint32_t llmnrfailCounter;
+   static uint32_t dnscalledCounter;
+   static uint32_t dnssuccessCounter;
+   static uint32_t dnsfailCounter;
 	BaseType_t     xReturn;
+   const char* temp = pcName;
+   dnscalledCounter++;
 
    // Determine if a name lookup is for this node.  Two names are given
    // to this node: that returned by pcApplicationHostnameHook() and that set
    // by mainDEVICE_NICK_NAME. If its a ip address query, check the ip address.
-   if( strcmp( pcName, pcApplicationHostnameHook() ) == 0 || strcmp( pcName, mainDEVICE_NICK_NAMEcapLetters ) == 0 )
+   if(      strcmp( temp, pcApplicationHostnameHook() ) == 0 
+         || strcmp( temp, mainDEVICE_NICK_NAMEcapLetters ) == 0 
+         || strcmp( temp, mainDEVICE_NICK_NAME ) == 0 
+         || strcmp( temp, HOSTNAMEDNS ) == 0 )
    {
-      xReturn = pdPASS;
-   }
-   else if( strcmp( pcName, mainDEVICE_NICK_NAME ) == 0 || strcmp( pcName, mainDEVICE_NICK_NAMEcapLetters ) == 0 )
-   {
+      dnssuccessCounter++;
       xReturn = pdPASS;
    }
    else
@@ -318,14 +317,14 @@ BaseType_t xApplicationDNSQueryHook( const char *pcName )
       memset(ipAddrQuery, 0x00, 30);
       sprintf( ipAddrQuery, "%d%c%d%c%d%c%d\ain-addr%carpa", ipAddress8b[3], ip3DigitCnt, ipAddress8b[2], ip2DigitCnt, ipAddress8b[1], ip1DigitCnt, ipAddress8b[0], 0x04 );
    
-      if( strcmp( pcName, ipAddrQuery ) == 0 )
+      if( strcmp( temp, ipAddrQuery ) == 0 )
       {
-         llmnrsuccessCounter++;
+         dnssuccessCounter++;
          xReturn = pdPASS;
       }
       else
       {
-         llmnrfailCounter++;
+         dnsfailCounter++;
          xReturn = pdFAIL;
       }
    }

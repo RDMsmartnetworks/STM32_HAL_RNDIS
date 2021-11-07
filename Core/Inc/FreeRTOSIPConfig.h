@@ -87,10 +87,10 @@ used as defaults. */
 
 /* Include support for LLMNR: Link-local Multicast Name Resolution
 (non-Microsoft) */
-#define ipconfigUSE_LLMNR					( 1 )
+#define ipconfigUSE_LLMNR					( 0 )
 
 /* Include support for NBNS: NetBIOS Name Service (Microsoft) */
-#define ipconfigUSE_NBNS					( 1 )
+#define ipconfigUSE_NBNS					( 0 )
 
 /* Include support for DNS caching.  For TCP, having a small DNS cache is very
 useful.  When a cache is present, ipconfigDNS_REQUEST_ATTEMPTS can be kept low
@@ -98,7 +98,7 @@ and also DNS may use small timeouts.  If a DNS reply comes in after the DNS
 socket has been destroyed, the result will be stored into the cache.  The next
 call to FreeRTOS_gethostbyname() will return immediately, without even creating
 a socket. */
-#define ipconfigUSE_DNS_CACHE				   ( 1 )
+#define ipconfigUSE_DNS_CACHE				   ( 0 )
 #define ipconfigDNS_CACHE_NAME_LENGTH		( 50 )
 #define ipconfigDNS_CACHE_ENTRIES			( 4 )
 #define ipconfigDNS_REQUEST_ATTEMPTS		( 2 )
@@ -159,7 +159,7 @@ reason.  The static configuration used is that passed into the stack by the
 FreeRTOS_IPInit() function call. */
 #define ipconfigUSE_DHCP 0
 #define ipconfigDHCP_REGISTER_HOSTNAME 0
-#define ipconfigDNS_USE_CALLBACKS 1
+#define ipconfigDNS_USE_CALLBACKS 0
 
 /* if dhcp doesn't respond on renewal use auto ip fallback */
 //#define ipconfigDHCP_FALL_BACK_AUTO_IP 1
@@ -253,7 +253,7 @@ be divisible by 8. */
 
 /* Set ipconfigUSE_DNS to 1 to include a basic DNS client/resolver.  DNS is used
 through the FreeRTOS_gethostbyname() API function. */
-#define ipconfigUSE_DNS			1
+#define ipconfigUSE_DNS			0
 
 /* If ipconfigREPLY_TO_INCOMING_PINGS is set to 1 then the IP stack will
 generate replies to incoming ICMP echo (ping) requests. */

@@ -179,7 +179,7 @@ static void webserver_listen( void *pvParameters )
    Socket_t                   xListeningSocket, xConnectedSocket;
    socklen_t                  xSize          = sizeof( xClient );
    const TickType_t           timeout        = portMAX_DELAY;
-   const BaseType_t           xBacklog       = 2;
+   const BaseType_t           xBacklog       = 4;
    
    /* Attempt to open the socket. */
    xListeningSocket = FreeRTOS_socket( FREERTOS_AF_INET, FREERTOS_SOCK_STREAM, FREERTOS_IPPROTO_TCP );
