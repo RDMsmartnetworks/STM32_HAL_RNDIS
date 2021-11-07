@@ -12,8 +12,8 @@
 ///
 /// \date      29102021
 /// 
-/// \copyright Copyright 2021 Reichle & De-Massari AG
-///            
+/// \copyright Copyright (C) 2021 by "Nico Korn". nico13@hispeed.ch
+///
 ///            Permission is hereby granted, free of charge, to any person 
 ///            obtaining a copy of this software and associated documentation 
 ///            files (the "Software"), to deal in the Software without 

@@ -12,8 +12,8 @@
 ///
 /// \date      29102021
 /// 
-/// \copyright Copyright 2021 Reichle & De-Massari AG
-///            
+/// \copyright Copyright (C) 2021 by "Nico Korn". nico13@hispeed.ch
+///
 ///            Permission is hereby granted, free of charge, to any person 
 ///            obtaining a copy of this software and associated documentation 
 ///            files (the "Software"), to deal in the Software without 
@@ -46,6 +46,8 @@
 // ****************************************************************************
 
 // Include ********************************************************************
+#include <stdbool.h>
+#include "cmsis_os.h"
 #include "led.h"
 
 // Private define *************************************************************
@@ -58,9 +60,15 @@
 TIM_HandleTypeDef htim2;
 static TIM_OC_InitTypeDef TIM_OC1Struct;
 static uint8_t duty = 20;
+const osThreadAttr_t ledTask_attributes = {
+  .name = "LED-task",
+  .stack_size = configMINIMAL_STACK_SIZE * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 
 // Private function prototypes ************************************************
-static void pwm_init( void );
+static void pwm_init ( void );
+static void ledTask  ( void *pvParameters );
 
 // Functions ******************************************************************
 // ----------------------------------------------------------------------------
@@ -84,6 +92,9 @@ void led_init( void ){
    led_reset();
    
    pwm_init();
+   
+   // start the status monitoring task
+   osThreadNew( ledTask, NULL, &ledTask_attributes );
 }
 
 // ----------------------------------------------------------------------------
@@ -94,7 +105,7 @@ void led_init( void ){
 /// \return    none
 static void pwm_init( void )
 {
-   uint16_t                     PrescalerValue;
+   uint16_t PrescalerValue;
    
    // TIM2 Periph clock enable
    __HAL_RCC_TIM2_CLK_ENABLE();
@@ -224,4 +235,40 @@ void led_test( void )
    HAL_Delay(200);
    HAL_GPIO_WritePin(LED_BANK, LED_PIN, GPIO_PIN_RESET);
    HAL_Delay(200);
+}
+
+//-----------------------------------------------------------------------------
+/// \brief     Led pulse task.
+///
+/// \param     [in]  pvParameters
+///
+/// \return    none
+static void ledTask( void *pvParameters )
+{
+   bool up = true;
+
+   while (1)
+   {
+      if( up != false && duty < 40 )
+      {
+         duty++;
+         led_setDuty(duty);
+         if( duty == 40 )
+         {
+            up = false;
+         }
+      }
+      else if(  up != true && duty > 1  )
+      {
+         duty--;
+         led_setDuty(duty);
+         if( duty == 1 )
+         {
+            up = true;
+         }
+      }
+
+      // measure temperature all 10 seconds
+      vTaskDelay(10);
+   }
 }

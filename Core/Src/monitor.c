@@ -8,7 +8,7 @@
 ///
 /// \author    Nico Korn
 ///
-/// \version   0.4.1.0
+/// \version   0.2.0.0
 ///
 /// \date      11102021
 /// 

@@ -11,7 +11,7 @@
 ///
 /// \date      02112021
 /// 
-/// \copyright Copyright (C) 2021 by "Reichle & De-Massari AG".
+/// \copyright Copyright (C) 2021 by "Nico Korn". nico13@hispeed.ch
 ///
 ///            Permission is hereby granted, free of charge, to any person 
 ///            obtaining a copy of this software and associated documentation 
@@ -291,8 +291,8 @@ static void webserver_handle( void *pvParameters )
       return;
    }
 
-   FreeRTOS_setsockopt( xConnectedSocket, 0, FREERTOS_SO_RCVTIMEO, &xReceiveTimeOut, sizeof( xReceiveTimeOut ) );
-	FreeRTOS_setsockopt( xConnectedSocket, 0, FREERTOS_SO_SNDTIMEO, &xSendTimeOut, sizeof( xSendTimeOut ) );
+   //FreeRTOS_setsockopt( xConnectedSocket, 0, FREERTOS_SO_RCVTIMEO, &xReceiveTimeOut, sizeof( xReceiveTimeOut ) );
+	//FreeRTOS_setsockopt( xConnectedSocket, 0, FREERTOS_SO_SNDTIMEO, &xSendTimeOut, sizeof( xSendTimeOut ) );
 
    for( ;; )
    {
@@ -516,7 +516,7 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
       "<p>FreeRTOS Version: %s</p>"
       "<p>Free Heap: %d bytes</p>"
       "<p>Running Tasks</p>"
-      "<p><style='padding: 20px'>Task 1: %s</style>, Priority: %d</p>"
+      "<p>- Task 1: %s, Priority: %d</p>"
       "<p>- Task 2: %s, Priority: %d</p>"
       "<p>- Task 3: %s, Priority: %d</p>"
       "<p>- Task 4: %s, Priority: %d</p>"
