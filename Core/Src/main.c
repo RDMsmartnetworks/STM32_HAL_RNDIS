@@ -32,6 +32,7 @@
 #include "queuex.h"
 #include "tcp.h"
 #include "led.h"
+#include "monitor.h"
 #include "dhcpserver.h"
 
 // Private typedef *************************************************************

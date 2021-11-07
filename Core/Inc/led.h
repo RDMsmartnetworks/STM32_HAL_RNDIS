@@ -57,12 +57,14 @@
 // Exported types *************************************************************
 
 // Exported functions *********************************************************
-void     led_init   ( void );
-void     led_deinit ( void );
-void     led_toggle ( void );
-void     led_set    ( void );
-void     led_reset  ( void );
-void     led_setDuty( uint8_t dutyParam );
-uint8_t  led_getDuty( void );
-void     led_test   ( void );
+void     led_init       ( void );
+void     led_deinit     ( void );
+void     led_toggle     ( void );
+void     led_set        ( void );
+void     led_reset      ( void );
+void     led_setDuty    ( uint8_t dutyParam );
+uint8_t  led_getDuty    ( void );
+void     led_test       ( void );
+void     led_setPulse   ( void );
+void     led_setDim     ( void );
 #endif // __LED_H

@@ -57,14 +57,16 @@
 // Private types     **********************************************************
 
 // Private variables **********************************************************
-TIM_HandleTypeDef htim2;
-static TIM_OC_InitTypeDef TIM_OC1Struct;
-static uint8_t duty = 20;
+TIM_HandleTypeDef          htim2;
+static TIM_OC_InitTypeDef  TIM_OC1Struct;
+static uint8_t             duty = 20;
+static osThreadId_t        led_taskHandle;
 const osThreadAttr_t ledTask_attributes = {
   .name = "LED-task",
-  .stack_size = configMINIMAL_STACK_SIZE * 4,
+  .stack_size = 2 * configMINIMAL_STACK_SIZE * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
+static bool pulse = false;
 
 // Private function prototypes ************************************************
 static void pwm_init ( void );
@@ -94,7 +96,7 @@ void led_init( void ){
    pwm_init();
    
    // start the status monitoring task
-   osThreadNew( ledTask, NULL, &ledTask_attributes );
+   led_taskHandle = osThreadNew( ledTask, NULL, &ledTask_attributes );
 }
 
 // ----------------------------------------------------------------------------
@@ -206,9 +208,11 @@ void led_setDuty( uint8_t dutyParam )
 /// \return    none
 uint8_t led_getDuty( void )
 {
-   TIM_OC1Struct.Pulse = duty;
-   HAL_TIM_OC_ConfigChannel(&htim2, &TIM_OC1Struct, TIM_CHANNEL_1);
-   return duty;
+   if( pulse != true )
+   {
+      return duty;
+   }
+   return 20;
 }
 
 
@@ -249,6 +253,12 @@ static void ledTask( void *pvParameters )
 
    while (1)
    {
+      if( pulse != true )
+      {
+         vTaskDelay(200);
+         continue;
+      }
+      
       if( up != false && duty < 40 )
       {
          duty++;
@@ -271,4 +281,26 @@ static void ledTask( void *pvParameters )
       // measure temperature all 10 seconds
       vTaskDelay(10);
    }
+}
+
+//-----------------------------------------------------------------------------
+/// \brief     Set led led into pulse mode
+///
+/// \param     none
+///
+/// \return    none
+void led_setPulse( void )
+{
+   pulse = true;
+}
+
+//-----------------------------------------------------------------------------
+/// \brief     Set led led into dim mode
+///
+/// \param     none
+///
+/// \return    none
+void led_setDim( void )
+{
+   pulse = false;
 }

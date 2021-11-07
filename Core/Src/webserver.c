@@ -123,7 +123,7 @@ static const char *webpage_top = {
 
 static const char *webpage_bottom_no_btn = {
    "<br>"    
-   "<p style=\"text-align:center;\">&#169 Copyright 2021 by Nico</p>" 
+   "<p style=\"text-align:center;\">&#169 Copyright 2021 by Nico Korn</p>" 
    "</div></body></html>"
 };
 
@@ -377,6 +377,9 @@ static void webserver_handle( void *pvParameters )
             {
                uint8_t value;
                
+               // set led into dim state
+               led_setDim();
+               
                // toggle led
                value = strtol( (char const*)&uri[15u], NULL, 10u );
                
@@ -386,6 +389,17 @@ static void webserver_handle( void *pvParameters )
                   // set led pwm
                   led_setDuty(value);
                }
+               
+               // send ok rest api
+               webserver_204(pageBuffer, TXBUFFERSIZE, xConnectedSocket);
+
+               // listen to the socket again
+               continue; 
+            }
+            else if (strncmp((char const*)uri, "/led_pulse", 9u) == 0)
+            {
+               // set led into pulse state
+               led_setPulse();
                
                // send ok rest api
                webserver_204(pageBuffer, TXBUFFERSIZE, xConnectedSocket);
@@ -524,7 +538,6 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
       "<p>- Task 6: %s, Priority: %d</p>"
       "<p>- Task 7: %s, Priority: %d</p>"
       "<p>___</p>"
-      //"<p><form action='led_toggle' method='post'><button  style='width:200px'>Toggle Led</button></form></p>"
          
       "<p><div class='slidecontainer'>"
          "Led Dimmer<input type='range' min='1' max='40' value=%d class='slider' id='myRange'>"
@@ -549,6 +562,7 @@ static void webserver_homepage( uint8_t* pageBuffer, uint16_t pageBufferSize, So
       "}"
       "</script>"
           
+      "<p><form action='led_pulse' method='post'><button  style='width:200px'>Led Pulse</button></form></p>"
       "<p>Temperature: %.1f C"
       "<p>Voltage: %.2f V</p>"
       "<p>___</p>"
